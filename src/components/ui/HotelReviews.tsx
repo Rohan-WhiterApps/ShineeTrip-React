@@ -24,7 +24,7 @@ const ReviewFormModal: React.FC<ReviewFormModalProps> = ({ isOpen, onClose, hote
     const [summary, setSummary] = useState('');
     const [comment, setComment] = useState('');
     
-    const token = localStorage.getItem('shineetrip_token');
+    const token = sessionStorage.getItem('shineetrip_token');
 
     useEffect(() => {
         if (isOpen) {
@@ -52,7 +52,7 @@ const ReviewFormModal: React.FC<ReviewFormModalProps> = ({ isOpen, onClose, hote
         setFormError(null);
     
         let customerIdToSend: number | null = null;
-        const userString = localStorage.getItem('shineetrip_user');
+        const userString = sessionStorage.getItem('shineetrip_user');
         if (userString) {
             try {
                 const user = JSON.parse(userString);
@@ -63,7 +63,7 @@ const ReviewFormModal: React.FC<ReviewFormModalProps> = ({ isOpen, onClose, hote
         }
 
         if (!customerIdToSend) {
-            const dbIdString = localStorage.getItem('shineetrip_db_customer_id');
+            const dbIdString = sessionStorage.getItem('shineetrip_db_customer_id');
             if (dbIdString) {
                 const parsed = parseInt(dbIdString, 10);
                 if (!isNaN(parsed)) customerIdToSend = parsed;
@@ -254,7 +254,7 @@ const HotelReviews: React.FC<HotelReviewsProps> = ({ hotelId }) => {
     const [error, setError] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false); 
 
-    const token = localStorage.getItem('shineetrip_token');
+    const token = sessionStorage.getItem('shineetrip_token');
     
     const dummyTags = ['Clean', 'Great Hospitality', 'Fast Response', 'Value for Money'];
 

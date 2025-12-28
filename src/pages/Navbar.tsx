@@ -22,43 +22,30 @@ export const Navbar = () => {
 
   // Check if user is logged in
   useEffect(() => {
-    const token = localStorage.getItem("shineetrip_token");
-    const uid = localStorage.getItem("shineetrip_uid");
-    const name = localStorage.getItem("shineetrip_name");
-    const email = localStorage.getItem("shineetrip_email");
-    
-    if (token) {
-      setIsLoggedIn(true);
-      if (name) {
-        setUserInitial(name.charAt(0).toUpperCase());
-      } else if (email) {
-        setUserInitial(email.charAt(0).toUpperCase());
-      } else if (uid) {
-        setUserInitial(uid.charAt(0).toUpperCase());
-      }
+  const token = sessionStorage.getItem("shineetrip_token");
+  const name =  sessionStorage.getItem("shineetrip_name");
+
+  // Check if token exists and is not a junk value
+  if (token && token !== "undefined" && token !== "null" && token.length > 20) {
+    setIsLoggedIn(true);
+    if (name) {
+      setUserInitial(name.charAt(0).toUpperCase());
     }
+  } else {
+    // Agar token galat hai toh clear kardo
+    setIsLoggedIn(false);
+    sessionStorage.removeItem("shineetrip_token");
+  }
 
-    // Listen for storage changes (login/logout in other tabs)
-    const handleStorageChange = () => {
-      const newToken = localStorage.getItem("shineetrip_token");
-      const newUid = localStorage.getItem("shineetrip_uid");
-      const newName = localStorage.getItem("shineetrip_name");
-      const newEmail = localStorage.getItem("shineetrip_email");
+  // Storage listener for synchronization
+  const handleStorageChange = () => {
+    const newToken = sessionStorage.getItem("shineetrip_token");
+    setIsLoggedIn(!!newToken);
+  };
 
-      setIsLoggedIn(!!newToken);
-      
-      if (newName) {
-        setUserInitial(newName.charAt(0).toUpperCase());
-      } else if (newEmail) {
-        setUserInitial(newEmail.charAt(0).toUpperCase());
-      } else if (newUid) {
-        setUserInitial(newUid.charAt(0).toUpperCase());
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
+  window.addEventListener("storage", handleStorageChange);
+  return () => window.removeEventListener("storage", handleStorageChange);
+}, []);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -74,22 +61,28 @@ export const Navbar = () => {
     scrollToSection("home");
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("shineetrip_token");
-    localStorage.removeItem("shineetrip_uid");
-    localStorage.removeItem("shineetrip_name");
-    localStorage.removeItem("shineetrip_email");
-    setIsLoggedIn(false);
-    setShowUserMenu(false);
-    navigate("/");
-  };
+ 
+const handleLogout = () => {
+  
+  sessionStorage.removeItem("shineetrip_token");
+  sessionStorage.removeItem("shineetrip_uid");
+  sessionStorage.removeItem("shineetrip_name");
+  sessionStorage.removeItem("shineetrip_email");
+  sessionStorage.removeItem("shineetrip_db_customer_id");
+  
+  setIsLoggedIn(false);
+  setUserInitial("U");
+  setShowUserMenu(false);
+  navigate("/");
+  window.location.reload(); 
+};
 
   const handleLoginSuccess = () => {
     setIsModalOpen(false);
-    const token = localStorage.getItem("shineetrip_token");
-    const uid = localStorage.getItem("shineetrip_uid");
-    const name = localStorage.getItem("shineetrip_name");
-    const email = localStorage.getItem("shineetrip_email");
+    const token = sessionStorage.getItem("shineetrip_token");
+    const uid = sessionStorage.getItem("shineetrip_uid");
+    const name = sessionStorage.getItem("shineetrip_name");
+    const email = sessionStorage.getItem("shineetrip_email");
 
     if (token) {
       setIsLoggedIn(true);

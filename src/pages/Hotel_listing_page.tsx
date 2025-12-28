@@ -11,6 +11,8 @@ import {
   SlidersHorizontal,
   X, 
   Wifi,
+  Minus,
+  Plus,
 } from "lucide-react";
 
 interface Hotel {
@@ -56,6 +58,9 @@ const HotelListingPage: React.FC = () => {
   const [currentChildren, setCurrentChildren] = useState(
     searchParams.get("children") || "0"
   );
+  const [rooms, setRooms] = useState(
+    searchParams.get("rooms") || "1"
+  );
 
   const [sortBy, setSortBy] = useState("Most Popular");
   const [selectedImages, setSelectedImages] = useState<{ [key: number]: number }>({});
@@ -106,6 +111,7 @@ const HotelListingPage: React.FC = () => {
       checkOut: currentCheckOut,
       adults: currentAdults,
       children: currentChildren,
+      rooms: String(rooms),
     }).toString();
 
     navigate(`/hotellists?${newSearchParams}`);
@@ -120,7 +126,7 @@ const HotelListingPage: React.FC = () => {
     setPage(1); // Page reset here
 
     try {
-      const token = localStorage.getItem("shineetrip_token");
+      const token = sessionStorage.getItem("shineetrip_token");
       if (!token) {
         console.warn("No token found — please log in first.");
         setLoading(false);
@@ -134,6 +140,7 @@ const HotelListingPage: React.FC = () => {
       if (checkOut) queryParams.append("checkOut", checkOut);
       if (adults) queryParams.append("adults", adults);
       if (children) queryParams.append("children", children);
+      if (searchParams.get("rooms")) queryParams.append("rooms", searchParams.get("rooms") || "1");
 
       // Page 1 aur Limit set kiya
       queryParams.append("page", '1'); 
@@ -242,7 +249,7 @@ const fetchMoreHotels = async (nextPage: number) => {
     setLoading(true);
 
     try {
-        const token = localStorage.getItem("shineetrip_token");
+        const token = sessionStorage.getItem("shineetrip_token");
         if (!token) {
             setLoading(false);
             return;
@@ -350,11 +357,7 @@ const handleLoadMore = () => {
     fetchMoreHotels(nextPage); 
 };
 
-// ----------------------------------------------------------------------
-// ⏯️ useEffects (Control Flow)
-// ----------------------------------------------------------------------
-
-  // API fetch triggers when URL params change (Initial Load/New Search) - FIX: No need to replace existing logic
+  // Initial Fetch Effect (Unchanged)
   useEffect(() => {
     fetchHotels(); // Calls the fetchHotels (Page 1 Only) function
   }, [fetchHotels, searchParams]); // searchParams dependency added
@@ -406,6 +409,7 @@ useEffect(() => {
     setCurrentCheckOut(searchParams.get("checkOut") || getTodayDateString());
     setCurrentAdults(searchParams.get("adults") || "2");
     setCurrentChildren(searchParams.get("children") || "0");
+    setRooms(searchParams.get("rooms") || "1");
   }, [searchParams]);
 
   // Scroll to top when component mounts (Unchanged)
@@ -425,6 +429,9 @@ useEffect(() => {
 
     // 💡 FIX 2 (CRITICAL): Yahan propertyId ko query parameter mein add karein
     currentSearchParams.set('propertyId', hotelId);
+    if (!currentSearchParams.has('rooms')) {
+        currentSearchParams.set('rooms', String(rooms));
+    }
     navigate(`/room-booking/${hotelId}?${currentSearchParams}`);
   };
   
@@ -455,7 +462,7 @@ useEffect(() => {
 
 
   const handleSearchClick = () => {
-    const token = localStorage.getItem("shineetrip_token");
+    const token = sessionStorage.getItem("shineetrip_token");
     if (!token) {
         alert("Please log in to search for hotels.");
         return;
@@ -532,15 +539,75 @@ const SearchBar = (
 
           {/* Room & Guest Field */}
           {/* Note: Isme right border sirf sm:screen par chahiye, mobile par nahi, isliye border-r hataya */}
-          <div className="flex-1 w-full sm:max-w-[250px] bg-gray-200 px-4 py-3 sm:border-r-0 border-b-0 border-gray-300">
-            <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">ROOM & GUEST</div>
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-[#D2A256]" />
-              <span className="text-base font-medium text-gray-900">
-                1 Room, {currentAdults} Adult{parseInt(currentAdults) > 1 ? "s" : ""}
-              </span>
-            </div>
-          </div>
+        {/* 🟢 UPDATED: ROOMS & GUESTS (With Rooms and Better Design) */}
+<div className="flex-1 w-full sm:max-w-[320px] bg-gray-200 px-4 py-3 border-b sm:border-r sm:border-b-0 border-gray-300">
+  <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+    ROOMS & GUESTS
+  </div>
+  <div className="flex items-center gap-3">
+    <Users className="w-4 h-4 text-[#D2A256]" />
+    
+    <div className="flex items-center gap-2 text-gray-900 font-bold text-sm">
+      {/* Rooms Section */}
+      <div className="flex items-center gap-1 bg-white/40 px-2 py-1 rounded-md">
+        <button 
+          onClick={() => setRooms(String(Math.max(1, parseInt(rooms) - 1)))}
+          className="hover:text-[#D2A256] transition-colors"
+        >
+          <Minus size={12} />
+        </button>
+        <span className="min-w-[20px] text-center">{rooms || 1}</span>
+        <button 
+          onClick={() => setRooms(String(parseInt(rooms) + 1))}
+          className="hover:text-[#D2A256] transition-colors"
+        >
+          <Plus size={12} />
+        </button>
+        <span className="text-[10px] text-gray-500 ml-0.5">Rm</span>
+      </div>
+
+      <span className="text-gray-400">|</span>
+
+      {/* Adults Section */}
+      <div className="flex items-center gap-1 bg-white/40 px-2 py-1 rounded-md">
+        <button 
+          onClick={() => setCurrentAdults(String(Math.max(1, parseInt(currentAdults) - 1)))}
+          className="hover:text-[#D2A256] transition-colors"
+        >
+          <Minus size={12} />
+        </button>
+        <span className="min-w-[20px] text-center">{currentAdults}</span>
+        <button 
+          onClick={() => setCurrentAdults(String(parseInt(currentAdults) + 1))}
+          className="hover:text-[#D2A256] transition-colors"
+        >
+          <Plus size={12} />
+        </button>
+        <span className="text-[10px] text-gray-500 ml-0.5">Ad</span>
+      </div>
+
+      <span className="text-gray-400">|</span>
+
+      {/* Children Section */}
+      <div className="flex items-center gap-1 bg-white/40 px-2 py-1 rounded-md">
+        <button 
+          onClick={() => setCurrentChildren(String(Math.max(0, parseInt(currentChildren) - 1)))}
+          className="hover:text-[#D2A256] transition-colors"
+        >
+          <Minus size={12} />
+        </button>
+        <span className="min-w-[20px] text-center">{currentChildren}</span>
+        <button 
+          onClick={() => setCurrentChildren(String(parseInt(currentChildren) + 1))}
+          className="hover:text-[#D2A256] transition-colors"
+        >
+          <Plus size={12} />
+        </button>
+        <span className="text-[10px] text-gray-500 ml-0.5">Ch</span>
+      </div>
+    </div>
+  </div>
+</div>
 
           {/* Search Button - Yellow/Gold color as in Figma */}
           <div className="flex-shrink-0 p-2">

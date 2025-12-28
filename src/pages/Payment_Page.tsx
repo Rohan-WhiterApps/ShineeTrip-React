@@ -66,8 +66,8 @@ const BookingPage: React.FC = () => {
     const finalTotal = retailPrice + taxPrice; 
 
 
-    const token = localStorage.getItem('shineetrip_token');
-    const customerIdStr = localStorage.getItem('shineetrip_db_customer_id') || '1'; // Using db customer ID
+    const token = sessionStorage.getItem('shineetrip_token');
+    const customerIdStr = sessionStorage.getItem('shineetrip_db_customer_id') || '1'; // Using db customer ID
     if (!customerIdStr || customerIdStr === '1' || isNaN(parseInt(customerIdStr))) {
     setPaymentMessage('Customer profile not loaded. Please log out and log in again.');
     setIsProcessing(false);
@@ -247,7 +247,7 @@ console.log("Customer ID check before API:", customerId);
                 // ✅ CRITICAL FIX: Token Expiry (401/403) check
                 if (errorStatus === 401 || errorStatus === 403) {
                     // Reset state & show auth popup
-                    localStorage.removeItem('shineetrip_token');
+                    sessionStorage.removeItem('shineetrip_token');
                     setIsProcessing(false); 
                     setShowAuthErrorModal(true);
                     return; 

@@ -92,7 +92,7 @@ export default function HeroSection() {
 useEffect(() => {
   const fetchLocations = async () => {
     try {
-      const token = localStorage.getItem("shineetrip_token");
+      const token = sessionStorage.getItem("shineetrip_token");
       const res = await fetch("http://46.62.160.188:3000/properties/search", {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
@@ -177,16 +177,19 @@ useEffect(() => {
   }, [searchParams]);
 
   // Handle Location Input & Autocomplete (Unchanged)
-  useEffect(() => {
-    if (location) {
-      const filtered = availableLocations.filter(loc => 
-        loc.toLowerCase().includes(location.toLowerCase())
-      );
-      setFilteredLocations(filtered);
-    } else {
-      setFilteredLocations([]);
-    }
-  }, [location, availableLocations]);
+useEffect(() => {
+  if (location.trim()) {
+    const userInput = location.toLowerCase().trim();
+    const filtered = availableLocations.filter(loc => {
+      // "City, COUNTRY" format ko split karke dono parts check karega
+      const [city, country] = loc.toLowerCase().split(',').map(s => s.trim());
+      return city.includes(userInput) || country.includes(userInput);
+    });
+    setFilteredLocations(filtered);
+  } else {
+    setFilteredLocations([]);
+  }
+}, [location, availableLocations]);
 
   // Close suggestions on click outside (Unchanged)
   useEffect(() => {
@@ -201,7 +204,7 @@ useEffect(() => {
 
   // ✅ NEW: Handle View All Hotels click
   const handleViewAllHotels = () => {
-  const token = localStorage.getItem("shineetrip_token");
+  const token = sessionStorage.getItem("shineetrip_token");
   if (!token) {
     setShowLoginPopup(true);
     return; 
@@ -217,6 +220,7 @@ useEffect(() => {
     checkOut: safeCheckOut,
     adults: '2',
     children: '0',
+    rooms: rooms.toString(),
   }).toString();
 
   navigate(`/hotellists?${searchQuery}`);
@@ -272,7 +276,7 @@ const extractCity = (loc: string): string => {
 // Final handleSearch
 const handleSearch = () => {
     // 1. Authentication Check
-    const token = localStorage.getItem("shineetrip_token");
+    const token = sessionStorage.getItem("shineetrip_token");
     if (!token) {
         setShowLoginPopup(true);
         return;
@@ -334,6 +338,7 @@ const handleSearch = () => {
         checkOut: finalCheckOut,
         adults: adults.toString(),
         children: children.toString(),
+        rooms: rooms.toString(),
     }).toString();
 
     navigate(`/hotellists?${query}`);
@@ -341,11 +346,11 @@ const handleSearch = () => {
 
   // ✅ Unified Click Handler based on Form State
   const handleButtonClick = () => {
-  const token = localStorage.getItem("shineetrip_token");
+  const token = sessionStorage.getItem("shineetrip_token");
   if (!token || isTokenExpired(token)) {
         
         if (token) {
-             localStorage.removeItem("shineetrip_token"); 
+             sessionStorage.removeItem("shineetrip_token"); 
         }
         
         setErrorPopup("Your session has expired. Please log in again to perform a search."); 
@@ -367,18 +372,17 @@ const handleSearch = () => {
     handleViewAllHotels();
   }
 };
-// Destination Card par click handle karne ke liye naya function
+
 const handleDestinationClick = (destination: Destination) => {
-    // 1. Token check karo (Login zaroori hai)
-    const token = localStorage.getItem("shineetrip_token");
+    // 1. Token Check (Authentication)
+    const token = sessionStorage.getItem("shineetrip_token");
     if (!token || isTokenExpired(token)) {
         
-        // Agar token expired tha, toh localStorage se hata do
+   
         if (token) {
-            localStorage.removeItem("shineetrip_token"); 
+            sessionStorage.removeItem("shineetrip_token"); 
         }
         
-        // Custom error message aur login popup dikhao
         setErrorPopup("Your session has expired. Please log in again to explore destinations."); 
         setShowLoginPopup(true);
         return; 
@@ -388,7 +392,7 @@ const handleDestinationClick = (destination: Destination) => {
         return; 
     }
 
-    // 2. Destination ka naam aur dates prepare karo
+
     const destinationName = destination.name.trim();
     const safeCheckIn = checkIn || getFutureDateString(1); 
     const safeCheckOut = checkOut || getFutureDateString(2); 
@@ -400,6 +404,7 @@ const handleDestinationClick = (destination: Destination) => {
         checkOut: safeCheckOut,
         adults: adults.toString(),
         children: children.toString(),
+        rooms: rooms.toString(),
     }).toString();
 
     // /hotellists page par redirect karo
@@ -541,22 +546,66 @@ const handleDestinationClick = (destination: Destination) => {
                   </div>
                   
                   {/* Autocomplete Dropdown */}
-                  {showSuggestions && filteredLocations.length > 0 && (
-                    <ul className="absolute z-50 w-full bg-white text-gray-800 rounded-lg mt-1 shadow-xl max-h-60 overflow-y-auto">
-                      {filteredLocations.map((loc, index) => (
-                        <li 
-                          key={index}
-                          onClick={() => {
-                            setLocation(loc);
-                            setShowSuggestions(false);
-                          }}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm border-b border-gray-100 last:border-0"
-                        >
-                          {loc}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  {/* Autocomplete Dropdown - Redesigned */}
+{/* Autocomplete Dropdown - Theme Matched */}
+{showSuggestions && filteredLocations.length > 0 && (
+  <div 
+    className="absolute z-[100] w-full rounded-2xl mt-2 shadow-2xl overflow-hidden border animate-in slide-in-from-top-2 duration-200 backdrop-blur-2xl"
+    style={{ 
+      background: 'rgba(30, 30, 30, 0.85)', // Darker theme matching the search widget
+      borderColor: 'rgba(210, 162, 86, 0.3)' // Subtle golden border
+    }}
+  >
+    {/* Header with Golden Accent */}
+    <div className="px-4 py-2 text-[10px] font-bold text-[#EFD08D] uppercase tracking-widest border-b border-white/10 bg-white/5">
+      Suggested Locations
+    </div>
+
+    <ul className="max-h-72 overflow-y-auto custom-scrollbar">
+      {filteredLocations.map((loc, index) => {
+        const [cityName, countryName] = loc.split(', ');
+        return (
+          <li 
+            key={index}
+            onClick={() => {
+              setLocation(loc);
+              setShowSuggestions(false);
+            }}
+            className="group flex items-center gap-4 px-4 py-3 hover:bg-white/5 cursor-pointer transition-all border-b border-white/5 last:border-0"
+          >
+            {/* Location Icon - Matching Search Bar Icon Style */}
+            <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-[#AB7E29] group-hover:to-[#EFD08D] transition-all duration-300">
+              <MapPin size={18} className="text-[#D2A256] group-hover:text-white" />
+            </div>
+            
+            {/* Location Text */}
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-sm font-bold text-white group-hover:text-[#EFD08D] transition-colors truncate tracking-wide">
+                {cityName}
+              </span>
+              <span className="text-[11px] text-gray-400 font-medium uppercase tracking-tighter group-hover:text-gray-300">
+                {countryName}
+              </span>
+            </div>
+
+            {/* "Select" badge - Exact Golden Gradient Match */}
+            <div className="ml-auto opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+               <span 
+                 className="text-[10px] font-black text-white px-3 py-1 rounded-lg shadow-lg"
+                 style={{ background: 'linear-gradient(180.95deg, #AB7E29 0.87%, #EFD08D 217.04%)' }}
+                >
+                  SELECT
+                </span>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+    
+    {/* Bottom Accent Line */}
+    <div className="h-1 bg-gradient-to-r from-transparent via-[#AB7E29] to-transparent opacity-50" />
+  </div>
+)}
                 </div>
 
                 {/* Check In */}

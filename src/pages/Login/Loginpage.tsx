@@ -117,10 +117,10 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       const token = await user.getIdToken();
       
       // 2. SAVE TOKEN IMMEDIATELY (FIX: Yeh line ab API call se pehle hai)
-      localStorage.setItem("shineetrip_token", token);
-      localStorage.setItem("shineetrip_uid", user.uid);
-      if (user.displayName) localStorage.setItem("shineetrip_name", user.displayName);
-      if (user.email) localStorage.setItem("shineetrip_email", user.email);
+      sessionStorage.setItem("shineetrip_token", token);
+      sessionStorage.setItem("shineetrip_uid", user.uid);
+      if (user.displayName) sessionStorage.setItem("shineetrip_name", user.displayName);
+      if (user.email) sessionStorage.setItem("shineetrip_email", user.email);
 
       // DEBUGGING STEP: Token ko console pe print karo
       console.log("--- DEBUG: NEW AUTH TOKEN ---");
@@ -148,16 +148,20 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       
       // Attempt 2: Fetch/Create Customer DB Record and get NUMERICAL ID
       try {
-          const dbCustomerId = await checkOrCreateCustomer(user, token);
-          // THIS IS THE FINAL ID USED FOR BOOKING API PAYLOADS
-          localStorage.setItem("shineetrip_db_customer_id", String(dbCustomerId)); 
-          
-          console.log("Login Success! DB Customer ID saved:", dbCustomerId);
-      } catch (dbError) {
-          console.error("Database Customer Link Failed:", dbError);
-          alert("Warning: Booking may fail. Database linking issue.");
-          // We don't block login, but alert the user.
-      }
+   const dbCustomerId = await checkOrCreateCustomer(user, token);
+   
+   // 2. AB TOKEN AUR DATA SAVE KARO (End mein)
+   sessionStorage.setItem("shineetrip_token", token);
+   sessionStorage.setItem("shineetrip_db_customer_id", String(dbCustomerId));
+   sessionStorage.setItem("shineetrip_name", user.displayName || "");
+   
+   onClose(); 
+   window.location.reload();
+} catch (error) {
+  
+   sessionStorage.clear();
+   console.error("Login sequence failed");
+}
 
 
       onClose(); // Close modal on success

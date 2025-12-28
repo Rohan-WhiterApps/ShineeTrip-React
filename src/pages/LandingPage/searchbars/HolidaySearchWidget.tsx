@@ -23,8 +23,7 @@ export const HolidaySearchWidget = () => {
       return;
     }
 
-    // 3. Swagger Parameters Mapping
-    // Hum 'city' aur 'departureDate' query params bhejenge
+  
     const query = new URLSearchParams({
       city: location.trim(),
       departureDate: departureDate || new Date().toISOString().split("T")[0],

@@ -11,7 +11,7 @@ const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({ roomName, order
     const navigate = useNavigate();
 
     const handleGoHome = () => {
-        navigate('/'); // User ko seedha landing page par bhej dega
+        navigate('/mybooking'); 
     };
 
     return (
@@ -35,7 +35,7 @@ const BookingSuccessCard: React.FC<BookingSuccessCardProps> = ({ roomName, order
                     className="w-full sm:w-auto px-6 py-3 bg-black text-white rounded-lg font-semibold hover:bg-gray-800 transition-colors flex items-center justify-center mx-auto gap-2"
                 >
                     <Home className="w-5 h-5" />
-                    Go to Home Page
+                    Go to My Bookings
                 </button>
             </div>
         </div>

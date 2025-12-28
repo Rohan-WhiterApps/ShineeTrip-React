@@ -89,8 +89,8 @@ const CustomerProfilePage: React.FC = () => {
     const [formState, setFormState] = useState<Partial<CustomerData>>({});
     const [myBookings, setMyBookings] = useState<any[]>([]);
     
-    const customerDbId = localStorage.getItem('shineetrip_db_customer_id');
-    const token = localStorage.getItem('shineetrip_token');
+    const customerDbId = sessionStorage.getItem('shineetrip_db_customer_id');
+    const token = sessionStorage.getItem('shineetrip_token');
     
     // ------------------------------------------------
     // 1. GET By ID Logic: Fetch Customer Data and Orders
@@ -234,7 +234,7 @@ const CustomerProfilePage: React.FC = () => {
 
     // --- Utility Handlers ---
     const handleLogout = () => {
-        localStorage.clear(); 
+        sessionStorage.clear(); 
         navigate('/'); 
     };
 
@@ -394,38 +394,32 @@ const ProfileNavItem: React.FC<{ icon: React.ElementType, label: string, active?
                     </div>
                     
                    {/* 2. My Bookings Section */}
-{/* 2. My Bookings Section - Final Fixed Version */}
+{/* 2. My Bookings Section - Updated for Grid and Navigation */}
 <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
     <h2 className="text-xl font-extrabold text-gray-900 mb-6">My Bookings</h2>
     
-    <div className="flex overflow-x-auto gap-5 pb-4 scrollbar-hide">
+    {/* 🟢 CHANGE 1: Overflow scroll ko hata kar Grid lagaya (Max 3 per row) */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {customer && customer.orders && customer.orders.length > 0 ? (
             customer.orders.map((order: any) => {
-                // Har order ke andar orderRooms array hai ya nahi check karein
                 const rooms = order.orderRooms || [];
                 
-                // Agar rooms hain toh unhe render karein
                 if (rooms.length > 0) {
                     return rooms.map((room: any) => (
                         <BookingCard 
                             key={`${order.id}-${room.id}`}
-                            // City access: room -> property -> city
                             destination={`${room.property?.city || 'India'}`}
-                            // Screenshot ke liye '1' ya rooms count dikhayein
                             count={1} 
-                            // Image access: room -> property -> images[0] -> image
                             image_url={room.property?.images?.[0]?.image || "https://placehold.co/180x110?text=Hotel"}
-                            onClick={() => navigate('/my-bookings')}
+                            // 🟢 CHANGE 2: Click par Order ID ke saath navigate karein
+                            onClick={() => navigate(`/mybooking?highlight=${order.id}`)}
                         />
                     ));
                 }
-                
-                // Agar order hai par room list gayab hai (Rare case)
                 return null;
             })
         ) : (
-            // No Bookings Case
-            <div className="w-full text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+            <div className="col-span-full text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300">
                 <ShoppingBag className="w-10 h-10 text-gray-300 mx-auto mb-2" />
                 <p className="text-gray-500 font-medium">No bookings found yet</p>
             </div>
@@ -492,16 +486,21 @@ const ProfileEditField: React.FC<{ label: string, name: keyof CustomerData, valu
 
 // Dynamic Booking Card Component
 const BookingCard: React.FC<{ destination: string, count: number, image_url: string, onClick?: () => void }> = ({ destination, count, image_url, onClick }) => (
-    <div className="shrink-0 w-[180px] bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all cursor-pointer" onClick={onClick}>
-        <img 
-            src={image_url} 
-            alt={destination} 
-            className="h-[110px] w-full object-cover"
-            onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/180x110?text=No+Image" }}
-        />
-        <div className="p-3 text-center"> {/* Screenshot mein text center hai */}
-            <p className="font-bold text-sm text-gray-900 truncate">{destination}</p>
-            <p className="text-[10px] text-gray-500 mt-1">{count} trips</p> {/* Screenshot mein 'trips' likha hai */}
+    <div 
+        className="w-full bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hover:shadow-xl transition-all cursor-pointer group" 
+        onClick={onClick}
+    >
+        <div className="overflow-hidden">
+            <img 
+                src={image_url} 
+                alt={destination} 
+                className="h-[150px] w-full object-cover group-hover:scale-110 transition-transform duration-500"
+                onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/300x150?text=Hotel+View" }}
+            />
+        </div>
+        <div className="p-4 text-center">
+            <p className="font-extrabold text-base text-gray-900 truncate">{destination}</p>
+            <p className="text-xs text-[#D2A256] font-semibold mt-1">{count} Booking(s)</p>
         </div>
     </div>
 );

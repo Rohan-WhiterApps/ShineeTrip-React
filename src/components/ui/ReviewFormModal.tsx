@@ -44,8 +44,8 @@ const ReviewFormModal: React.FC<ReviewFormModalProps> = ({ isOpen, onClose, hote
         }
 
         setIsLoading(true);
-        const token = localStorage.getItem('shineetrip_token');
-        const userName = localStorage.getItem('shineetrip_name') || 'Guest Reviewer'; 
+        const token = sessionStorage.getItem('shineetrip_token');
+        const userName = sessionStorage.getItem('shineetrip_name') || 'Guest Reviewer'; 
 
         // 💡 API Payload Construction based on the provided schema:
         const payload = {

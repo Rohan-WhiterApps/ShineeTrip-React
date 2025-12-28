@@ -130,7 +130,7 @@ export default function RoomBookingPage() {
 useEffect(() => {
     const fetchServices = async () => {
         try {
-            const token = localStorage.getItem('shineetrip_token');
+            const token = sessionStorage.getItem('shineetrip_token');
             const response = await fetch('http://46.62.160.188:3000/service-prod-info', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -151,7 +151,7 @@ useEffect(() => {
             // ... (Fetching logic remains unchanged)
             if (!hotelId) { setError('No hotel ID provided'); setLoading(false); return; }
             
-            const token = localStorage.getItem('shineetrip_token');
+            const token = sessionStorage.getItem('shineetrip_token');
             
             if (!token) {
                 console.error("Authorization Required: Token missing. Redirecting to home/login.");
@@ -169,7 +169,7 @@ useEffect(() => {
                 if (!response.ok) {
                     const errorStatus = response.status;
                     if (errorStatus === 403 || errorStatus === 401) {
-                        localStorage.removeItem('shineetrip_token'); 
+                        sessionStorage.removeItem('shineetrip_token'); 
                         navigate('/'); 
                         throw new Error("Session expired. Please log in again.");
                     }
@@ -190,7 +190,7 @@ useEffect(() => {
     useEffect(() => { window.scrollTo(0, 0); }, []);
 
     // --- Conditional Render (Pre-JSX Checks) ---
-    const token = localStorage.getItem('shineetrip_token');    
+    const token = sessionStorage.getItem('shineetrip_token');    
     // Check if redirect was triggered (token missing but not loading anymore)
     if (!token && !loading && !hotelData) {
         return (

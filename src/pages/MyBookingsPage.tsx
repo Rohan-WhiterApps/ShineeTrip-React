@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { 
     Loader2, ShoppingBag, Search, 
     CheckCircle, Clock, ArrowLeft, Star, FileText,
-    User, XCircle
+    User, XCircle,
+    Phone,
+    Users
 } from 'lucide-react';
 import { format } from 'date-fns'; 
 
@@ -20,6 +23,7 @@ interface RoomTypeDetails {
     id: number;
     room_type: string;
     images?: { image: string }[];
+    serviceProdInfos?: { id: number; name: string }[];
 }
 
 interface OrderRoomDetail {
@@ -106,93 +110,147 @@ const BookingDetailModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClos
     if (!isOpen || !data) return null;
     const { order, room } = data;
 
-    return (
-        <div className="fixed  inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-white mt- rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
-                {/* Header */}
-                <div className="bg-[#D2A256] p-4 text-white flex justify-between items-center">
-                    <h2 className="text-xl font-bold">Booking Details</h2>
-                    <button onClick={onClose} className="p-1 hover:bg-white/20 rounded-full transition-colors">
-                        <XCircle className="w-6 h-6" />
-                    </button>
+    
+    const userName = sessionStorage.getItem('shineetrip_name') || "Guest User";
+    const userEmail = sessionStorage.getItem('shineetrip_email') || "N/A";
+
+// 🟢 DYNAMIC PRICE CALCULATION
+const roomBasePrice = Number(room.roomPrice) || 0;
+const totalOrderPrice = Number(order.totalPrice) || 0;
+const taxesAndFees = totalOrderPrice - roomBasePrice;
+
+return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+            <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+                
+                {/* Header Section */}
+                <div className="bg-[#263238] p-6 text-white">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="text-yellow-400 text-[10px] font-bold uppercase tracking-[2px] mb-1">Booking Confirmation</p>
+                            <h2 className="text-2xl font-black">ID: #{order.id}</h2>
+                            <p className="text-gray-400 text-xs mt-1 font-medium">
+                                Booked on: {format(new Date(order.createdAt), 'dd MMM yyyy, hh:mm a')}
+                            </p>
+                        </div>
+                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-all">
+                            <XCircle className="w-6 h-6" />
+                        </button>
+                    </div>
                 </div>
 
-                {/* Body */}
-                <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
-                    {/* Status & Order ID */}
-                    <div className="flex justify-between items-start border-b pb-4">
-                        <div>
-                            <p className="text-xs text-gray-500 uppercase tracking-wider font-bold">Order ID</p>
-                            <p className="font-mono text-lg text-gray-800">#{order.id}</p>
-                        </div>
-                        <div className="text-right">
-                            <BookingStatusPill status={order.status} />
-                            <p className="text-xs text-gray-400 mt-1">Booked on {formatShortDate(order.createdAt)}</p>
-                        </div>
-                    </div>
-
-                    {/* Hotel Info */}
-                    <div className="flex gap-4">
-                        <img 
-                            src={room.property.images?.[0]?.image || "https://placehold.co/100x100?text=Hotel"} 
-                            className="w-20 h-20 rounded-lg object-cover border" 
-                            alt="hotel"
-                        />
-                        <div>
-                            <h3 className="font-bold text-gray-900">{room.property.name}</h3>
-                            <p className="text-sm text-gray-600 line-clamp-2">{room.property.city}, Maharashtra</p>
-                            <p className="text-xs text-[#D2A256] font-semibold mt-1">Room: {room.roomType.room_type}</p>
+                <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto bg-gray-50/30">
+                    
+                    {/* 1. Dynamic Guest Information Section */}
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                        <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                            <User className="w-3.5 h-3.5" /> Guest Details
+                        </h4>
+                        <div className="flex flex-col sm:flex-row gap-6">
+                            <div className="flex-1">
+                                <p className="text-[10px] text-gray-400 font-bold uppercase">Primary Guest</p>
+                                <p className="text-sm font-extrabold text-gray-800">{userName}</p>
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-[10px] text-gray-400 font-bold uppercase">Email Address</p>
+                                <p className="text-sm font-extrabold text-gray-800">{userEmail}</p>
+                            </div>
+                            <div className="flex-1">
+                                <p className="text-[10px] text-gray-400 font-bold uppercase">Status</p>
+                                <div className="mt-1"><BookingStatusPill status={order.status} /></div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Stay Details */}
-                    <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                        <div>
-                            <p className="text-[10px] text-gray-400 uppercase font-bold">Check-In</p>
-                            <p className="text-sm font-bold text-gray-700">{formatDayAndDate(room.checkIn)}</p>
+                    {/* 2. Dynamic Hotel & Room Info */}
+                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                        <div className="flex gap-4 pb-5 border-b border-gray-50">
+                            <img 
+                                src={room.property.images?.[0]?.image || "https://placehold.co/100x100?text=Hotel"} 
+                                className="w-24 h-24 rounded-2xl object-cover border border-gray-100" 
+                                alt="hotel"
+                            />
+                            <div>
+                                <h3 className="font-black text-xl text-gray-900 leading-tight">{room.property.name}</h3>
+                                <p className="text-sm text-gray-500">{room.property.city}</p>
+                                <div className="mt-2 inline-flex items-center bg-yellow-50 text-[#D2A256] px-3 py-1 rounded-lg text-xs font-bold border border-yellow-100">
+                                    {room.roomType.room_type}
+                                </div>
+                            </div>
                         </div>
-                        <div className="text-right">
-                            <p className="text-[10px] text-gray-400 uppercase font-bold">Check-Out</p>
-                            <p className="text-sm font-bold text-gray-700">{formatDayAndDate(room.checkOut)}</p>
+
+                        {/* Stay Timeline (MMT Style) */}
+                        <div className="grid grid-cols-2 divide-x divide-gray-100 mt-5 pt-2">
+                            <div className="pr-4">
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Check-In</p>
+                                <p className="text-lg font-black text-gray-800">{formatShortDate(room.checkIn)}</p>
+                                <p className="text-xs text-gray-500 font-medium">{format(new Date(room.checkIn), 'EEEE')}</p>
+                            </div>
+                            <div className="pl-4">
+                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Check-Out</p>
+                                <p className="text-lg font-black text-gray-800">{formatShortDate(room.checkOut)}</p>
+                                <p className="text-xs text-gray-500 font-medium">{format(new Date(room.checkOut), 'EEEE')}</p>
+                            </div>
                         </div>
-                        <div className="pt-2">
-                            <p className="text-[10px] text-gray-400 uppercase font-bold">Guests</p>
-                            <p className="text-sm font-bold text-gray-700">{room.adults} Adults, {room.children} Child</p>
+                        <div className="mt-4 bg-gray-50 p-2 rounded-lg text-center text-[11px] font-bold text-gray-600">
+                            Stay Duration: {room.adults} Adults • {room.children} Children
                         </div>
                     </div>
 
-                    {/* Pricing breakdown */}
-                    <div className="space-y-2">
-                        <p className="text-sm font-bold text-gray-800 border-b pb-1">Price Summary</p>
-                        <div className="flex justify-between text-sm text-gray-600">
-                            <span>Room Price</span>
-                            <span>{order.currency} {room.roomPrice}</span>
-                        </div>
-                        <div className="flex justify-between text-base font-extrabold text-gray-900 pt-2 border-t">
-                            <span>Total Paid</span>
-                            <span className="text-green-600">{order.currency} {order.totalPrice}</span>
+                   {/* 3. Fully Dynamic Services (Amenities/Inclusions) */}
+<div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+    <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-4">Stay Inclusions</h4>
+    <div className="flex flex-wrap gap-2">
+        {/* 🟢 STEP 1: Agar Order ke room mein specific services (like Breakfast) saved hain */}
+        {(room.roomType?.serviceProdInfos ?? []).length > 0 ? (
+            (room.roomType?.serviceProdInfos ?? []).map((service: any, idx: number) => (
+                <div key={idx} className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 border border-gray-100">
+                    <CheckCircle className="w-4 h-4 text-green-500" /> 
+                    {service.name}
+                </div>
+            ))
+        ) : (
+            /* 🟢 STEP 2: Agar koi extra service nahi hai, toh standard amenities dikhao jo Room Details modal mein thi */
+            <>
+                <div className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 border border-gray-100">
+                     No extra services included
+                </div>
+               
+            </>
+        )}
+    </div>
+</div>
+
+                    {/* 4. Dynamic Payment Summary */}
+                    <div className="space-y-3">
+                        <h4 className="text-sm font-bold text-gray-900 px-1">Payment Breakdown</h4>
+                        <div className="bg-white p-5 rounded-2xl border border-gray-100 space-y-4 shadow-sm">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500 font-medium">Room Rate (Total Stay)</span>
+                                <span className="text-gray-900 font-black">{order.currency} {roomBasePrice.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-500 font-medium">Taxes & Fees</span>
+                                <span className="text-gray-900 font-black">{order.currency} {taxesAndFees.toFixed(2)}</span>
+                            </div>
+                            <div className="pt-4 border-t border-dashed flex justify-between items-center">
+                                <span className="text-gray-900 font-black text-lg">Total Amount Paid</span>
+                                <span className="text-2xl font-black text-green-600">{order.currency} {totalOrderPrice.toLocaleString()}</span>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Policies / Help */}
-                    <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-100">
-                        <p className="text-xs text-yellow-800 leading-relaxed italic">
-                            * Please carry a valid Govt. ID during check-in. PAN card is not accepted.
-                        </p>
-                    </div>
                 </div>
 
                 {/* Footer Actions */}
-                <div className="p-4 bg-gray-50 flex gap-3">
-                   <button 
-    onClick={() => handleDownloadPDF(order, room)}
-    className="flex-1 flex items-center justify-center gap-2 bg-gray-900 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-black transition-all"
->
-    <FileText className="w-4 h-4" /> Download PDF
-</button>
-                    <a href={`tel:${room.property?.id}`} className="flex-1 flex items-center justify-center gap-2 border border-gray-300 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-100 transition-all text-gray-700">
-                        Contact Support
-                    </a>
+                <div className="p-6 bg-white border-t border-gray-100 flex gap-4">
+                    <button 
+                        onClick={() => handleDownloadPDF(order, room)}
+                        className="flex-1 flex items-center justify-center gap-2 bg-[#D2A256] text-white py-4 rounded-2xl text-sm font-black hover:bg-[#b88d45] transition-all shadow-lg"
+                    >
+                        <FileText className="w-5 h-5" /> Download Voucher
+                    </button>
+                    
                 </div>
             </div>
         </div>
@@ -200,44 +258,160 @@ const BookingDetailModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClos
 };
 
 const handleDownloadPDF = (order: Order, room: OrderRoomDetail) => {
-    // Ye function ek temporary print window kholega jisme sirf invoice details hongi
+    const userName = sessionStorage.getItem('shineetrip_name') || "Guest User";
+    const userEmail = sessionStorage.getItem('shineetrip_email') || "Not Provided";
+    const bookingDate = new Date(order.createdAt).toLocaleDateString('en-GB', { 
+        day: '2-digit', month: 'long', year: 'numeric' 
+    });
+
+    // 🟢 DYNAMIC INCLUSIONS (Badges with Icons)
+    const inclusionsHTML = room.roomType?.serviceProdInfos && room.roomType.serviceProdInfos.length > 0 
+        ? room.roomType.serviceProdInfos.map((s: any) => `
+            <div class="inclusion-pill">
+                <span class="dot"></span> ${s.name}
+            </div>`).join('') 
+        : `<div class="inclusion-pill"><span class="dot"></span> Free Wi-Fi</div>
+           <div class="inclusion-pill"><span class="dot"></span> Air Conditioning</div>
+           <div class="inclusion-pill"><span class="dot"></span> Complimentary Breakfast</div>`;
+
     const printContent = `
         <html>
             <head>
-                <title>Invoice - Order #${order.id}</title>
+                <title>ShineeTrip E-Voucher - #${order.id}</title>
                 <style>
-                    body { font-family: sans-serif; padding: 40px; }
-                    .header { border-bottom: 2px solid #D2A256; padding-bottom: 20px; margin-bottom: 20px; }
-                    .row { display: flex; justify-content: space-between; margin-bottom: 10px; }
-                    .bold { font-weight: bold; }
-                    .footer { margin-top: 50px; font-size: 12px; color: #666; text-align: center; }
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+                    body { font-family: 'Inter', sans-serif; color: #1a1a1a; margin: 0; padding: 0; background: #f4f4f4; }
+                    .page { width: 210mm; min-height: 297mm; padding: 20mm; margin: 10mm auto; background: white; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
+                    
+                    /* Decorative Top Bar */
+                    .top-accent { position: absolute; top: 0; left: 0; width: 100%; height: 8px; background: linear-gradient(90deg, #AB7E29 0%, #EFD08D 100%); }
+                    
+                    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; padding-top: 10px; }
+                    .logo-area .brand { font-size: 32px; font-weight: 800; color: #263238; margin: 0; letter-spacing: -1px; }
+                    .logo-area .brand span { color: #AB7E29; }
+                    .logo-area .tagline { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px; }
+                    
+                    .voucher-badge { background: #263238; color: white; padding: 15px 25px; border-radius: 0 0 0 20px; text-align: right; margin: -30px -30px 0 0; }
+                    .voucher-badge h1 { margin: 0; font-size: 18px; text-transform: uppercase; letter-spacing: 2px; color: #EFD08D; }
+                    .voucher-badge p { margin: 5px 0 0; font-size: 12px; opacity: 0.8; }
+
+                    /* Hero Hotel Card */
+                    .hotel-hero { background: linear-gradient(135deg, #263238 0%, #37474f 100%); color: white; padding: 30px; border-radius: 24px; margin-bottom: 30px; position: relative; }
+                    .hotel-hero h2 { margin: 0; font-size: 28px; font-weight: 800; color: #EFD08D; }
+                    .hotel-hero p { margin: 8px 0 0; font-size: 14px; opacity: 0.9; display: flex; align-items: center; gap: 5px; }
+                    .status-tag { position: absolute; top: 30px; right: 30px; background: #4CAF50; color: white; padding: 5px 15px; border-radius: 50px; font-size: 12px; font-weight: bold; }
+
+                    .main-grid { display: grid; grid-template-cols: 1.5fr 1fr; gap: 25px; }
+                    .card { background: #ffffff; border: 1.5px solid #f0f0f0; border-radius: 20px; padding: 20px; }
+                    .card-title { font-size: 11px; font-weight: 800; color: #AB7E29; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+                    .card-title::after { content: ''; flex: 1; height: 1px; background: #eee; }
+
+                    /* Stay Timeline */
+                    .timeline { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+                    .time-node { flex: 1; }
+                    .time-node .date { font-size: 18px; font-weight: 800; color: #263238; margin: 0; }
+                    .time-node .day { font-size: 12px; color: #888; margin: 2px 0; }
+                    .connector { flex: 0.5; height: 2px; background: #f0f0f0; position: relative; margin: 0 15px; }
+                    .connector::after { content: '✈'; position: absolute; top: -10px; left: 40%; color: #AB7E29; font-size: 14px; }
+
+                    /* Inclusions Pills */
+                    .inclusions-container { display: flex; flex-wrap: wrap; gap: 8px; }
+                    .inclusion-pill { background: #f8f9fa; border: 1px solid #e9ecef; padding: 6px 12px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #495057; display: flex; align-items: center; gap: 6px; }
+                    .inclusion-pill .dot { width: 6px; height: 6px; background: #AB7E29; border-radius: 50%; }
+
+                    /* Price Table */
+                    .price-details { margin-top: 25px; border-top: 2px dashed #eee; padding-top: 20px; }
+                    .price-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
+                    .total-row { background: #263238; color: white; padding: 20px; border-radius: 15px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; }
+                    .total-row .amount { font-size: 24px; font-weight: 800; color: #EFD08D; }
+
+                    .footer-notes { margin-top: 40px; font-size: 10px; color: #999; line-height: 1.8; }
+                    .qr-placeholder { float: right; width: 80px; height: 80px; background: #eee; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 8px; text-align: center; color: #aaa; border: 1px solid #ddd; }
+
+                    @media print {
+                        body { background: white; }
+                        .page { margin: 0; box-shadow: none; border: none; }
+                        .no-print { display: none; }
+                    }
                 </style>
             </head>
             <body>
-                <div class="header">
-                    <h1>ShineeTrip Booking Confirmation</h1>
-                    <p>Order ID: #${order.id} | Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
-                </div>
-                <div class="section">
-                    <h3>Hotel Details</h3>
-                    <p class="bold">${room.property.name}</p>
-                    <p>${room.property.city}</p>
-                </div>
-                <div class="section">
-                    <h3>Stay Details</h3>
-                    <div class="row"><span>Check-in:</span> <span class="bold">${room.checkIn}</span></div>
-                    <div class="row"><span>Check-out:</span> <span class="bold">${room.checkOut}</span></div>
-                    <div class="row"><span>Room Type:</span> <span>${room.roomType.room_type}</span></div>
-                    <div class="row"><span>Guests:</span> <span>${room.adults} Adults, ${room.children} Children</span></div>
-                </div>
-                <div class="section" style="margin-top: 30px; background: #f9f9f9; padding: 15px;">
-                    <div class="row" style="font-size: 18px;">
-                        <span class="bold">Total Paid:</span>
-                        <span class="bold" style="color: green;">${order.currency} ${order.totalPrice}</span>
+                <div class="page">
+                    <div class="top-accent"></div>
+                    
+                    <div class="header">
+                        <div class="logo-area">
+                            <h1 class="brand">SHINEE <span>TRIP</span></h1>
+                            <div class="tagline">Himachal's Premier Luxury Travel Planner</div>
+                        </div>
+                        <div class="voucher-badge">
+                            <h1>CONFIRMED VOUCHER</h1>
+                            <p>Booking ID: #${order.id}</p>
+                        </div>
                     </div>
-                </div>
-                <div class="footer">
-                    <p>Thank you for booking with ShineeTrip. Please present this at the time of check-in.</p>
+
+                    <div class="hotel-hero">
+                        <div class="status-tag">PAYMENT RECEIVED</div>
+                        <h2>${room.property.name}</h2>
+                        <p>📍 ${room.property.city}, India • ${room.roomType.room_type}</p>
+                    </div>
+
+                    <div class="main-grid">
+                        <div class="card">
+                            <div class="card-title">Reservation Details</div>
+                            <div class="timeline">
+                                <div class="time-node">
+                                    <p class="day">CHECK-IN (12 PM)</p>
+                                    <p class="date">${room.checkIn}</p>
+                                </div>
+                                <div class="connector"></div>
+                                <div class="time-node" style="text-align: right;">
+                                    <p class="day">CHECK-OUT (11 AM)</p>
+                                    <p class="date">${room.checkOut}</p>
+                                </div>
+                            </div>
+                            <p style="font-size: 12px; color: #666; margin-top: 15px; font-weight: 600;">
+                                Total Guests: ${room.adults} Adults, ${room.children} Children
+                            </p>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">Primary Guest</div>
+                            <p style="font-size: 16px; font-weight: 800; margin: 0; color: #263238;">${userName}</p>
+                            <p style="font-size: 12px; color: #888; margin: 5px 0;">${userEmail}</p>
+                            <div style="margin-top: 15px; font-size: 11px; color: #AB7E29; font-weight: bold;">
+                                Verified Profile ✓
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 25px;">
+                        <div class="card">
+                            <div class="card-title">Stay Inclusions & Amenities</div>
+                            <div class="inclusions-container">
+                                ${inclusionsHTML}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="price-details">
+                        <div class="total-row">
+                            <div>
+                                <p style="margin:0; font-size: 12px; opacity: 0.8; font-weight: bold; text-transform: uppercase;">Total Amount Paid</p>
+                                <p style="margin:5px 0 0; font-size: 10px; opacity: 0.6;">Inclusive of GST & Service Charges</p>
+                            </div>
+                            <div class="amount">${order.currency} ${order.totalPrice.toLocaleString()}</div>
+                        </div>
+                    </div>
+
+                    <div class="footer-notes">
+                        <div class="qr-placeholder">SCAN FOR<br>LOCATION</div>
+                        <p><b>Important Note:</b><br>
+                        • Please carry this voucher and a valid Govt. ID (Aadhar/Passport) during check-in.<br>
+                        • For any modifications or cancellations, please contact info@shineetrip.com.<br>
+                        • This is an electronically generated document. No signature required.</p>
+                        <p style="text-align: center; margin-top: 30px; font-weight: bold; color: #263238;">Thank you for choosing ShineeTrip!</p>
+                    </div>
                 </div>
             </body>
         </html>
@@ -247,27 +421,28 @@ const handleDownloadPDF = (order: Order, room: OrderRoomDetail) => {
     if (printWindow) {
         printWindow.document.write(printContent);
         printWindow.document.close();
-        printWindow.print(); // Ye print dialog box open kar dega jahan se user "Save as PDF" kar sakta hai
+        setTimeout(() => { printWindow.print(); }, 700);
     }
 };
-
 const MyBookingsPage: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [filterStatus, setFilterStatus] = useState('all'); 
     const [selectedBooking, setSelectedBooking] = useState<{order: Order, room: OrderRoomDetail} | null>(null);
-const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-const openDetails = (order: Order, room: OrderRoomDetail) => {
-    setSelectedBooking({ order, room });
-    setIsModalOpen(true);
-};
+    const openDetails = (order: Order, room: OrderRoomDetail) => {
+        setSelectedBooking({ order, room });
+        setIsModalOpen(true);
+    };
     
-    const customerDbId = localStorage.getItem('shineetrip_db_customer_id');
-    const token = localStorage.getItem('shineetrip_token');
+    const customerDbId = sessionStorage.getItem('shineetrip_db_customer_id');
+    const token = sessionStorage.getItem('shineetrip_token');
     const API_BASE = 'http://46.62.160.188:3000';
+    const highlightId = searchParams.get('highlight');
 
     const fetchOrders = useCallback(async () => {
         if (!customerDbId || !token) {
@@ -309,6 +484,19 @@ const openDetails = (order: Order, room: OrderRoomDetail) => {
     useEffect(() => {
         fetchOrders();
     }, [fetchOrders]);
+
+    useEffect(() => {
+        if (highlightId && !loading && orders.length > 0) {
+            const timer = setTimeout(() => {
+                const element = document.getElementById(`booking-card-${highlightId}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    element.classList.add('ring-4', 'ring-[#D2A256]', 'ring-offset-2', 'rounded-xl');
+                }
+            }, 800);
+            return () => clearTimeout(timer);
+        }
+    }, [highlightId, loading, orders]);
     
     // Fixed Filtering Logic to match Partial Strings
     const filteredOrders = orders.filter(order => {
@@ -368,8 +556,9 @@ const openDetails = (order: Order, room: OrderRoomDetail) => {
                     <div className="space-y-6">
                         {filteredOrders.length > 0 ? (
                             filteredOrders.map(order => (
-                                order.orderRooms?.map(room => (
-                                    <div key={room.id} className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+                                <div key={order.id} id={`booking-card-${order.id}`} className="transition-all duration-500">
+                                {order.orderRooms?.map(room => (
+                                    <div key={room.id}  className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
                                         <div className="flex items-center gap-2 mb-4">
                                             <BookingStatusPill status={order.status} /> 
                                             <span className='text-gray-500 text-sm'>• Out: {formatDayAndDate(room.checkOut)}</span>
@@ -402,11 +591,27 @@ const openDetails = (order: Order, room: OrderRoomDetail) => {
                                         {/* Buttons */}
                                         <div className='pt-4 flex flex-wrap gap-3'>
                                             <button 
-                                                onClick={() => navigate(`/hotel/${room.property.id}`)}
-                                                className="flex-1 bg-white border border-[#D2A256] text-[#D2A256] py-2 rounded-lg text-sm font-bold hover:bg-yellow-50"
-                                            >
-                                                Book Again
-                                            </button>
+    onClick={() => {
+        const hotelId = room.property.id; // Jaise tumhare example mein 27 ya 34 hai
+        
+        // Saare params ko ek object mein dalo
+        const params = new URLSearchParams({
+            location: room.property.city,
+            checkIn: room.checkIn,
+            checkOut: room.checkOut,
+            adults: String(room.adults),
+            children: String(room.children),
+            propertyId: String(hotelId) // Ye tumhare URL mein extra tha, toh hum bhi bhej rahe hain
+        }).toString();
+        
+        // 🟢 Asli fix: Path ko "/room-booking/" karo
+        navigate(`/room-booking/${hotelId}?${params}`);
+    }}
+    
+    className="flex-1 bg-white border border-[#D2A256] text-[#D2A256] py-2 rounded-lg text-sm font-bold hover:bg-yellow-50"
+>
+    Book Again
+</button>
                                             <button 
     onClick={() => openDetails(order, room)}
     className="flex-1 border border-gray-400 text-gray-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100"
@@ -418,7 +623,8 @@ const openDetails = (order: Order, room: OrderRoomDetail) => {
                                             </button>
                                         </div>
                                     </div>
-                                ))
+                                ))}
+                                </div>
                             ))
                         ) : (
                             <div className="text-center p-20 bg-white rounded-xl border-2 border-dashed">
