@@ -64,9 +64,9 @@ const App: React.FC = () => {
   
 
   
-    <Route path='/packages' element={<PackagesPage/>}/>
+   
     <Route path="/holiday-packages" element={<HolidayPackages />} />
-    <Route path="/package-detail" element={<PackageDetailsPage/>}/>
+    <Route path="/package-detail/:id" element={<PackageDetailsPage/>}/>
   
     <Route path='/about' element={<AboutPage/>}/>
     <Route path='/privacy-policy' element={<PrivacyPolicy/>}/>

@@ -92,7 +92,13 @@ const HotelListingPage: React.FC = () => {
 
   // ✅ Function to handle navigation with new search parameters
   const handleSearch = () => {
+  setLoading(true);
     setFetchError(null);
+
+    const searchLoc = currentLocation || searchParams.get("location") || "";
+    const searchCin = currentCheckIn; 
+    const searchCout = currentCheckOut;
+    const searchRooms = rooms || searchParams.get("rooms") || "1";
 
     const today = getTodayDateString();
     if (currentCheckIn < today) {
@@ -105,14 +111,14 @@ const HotelListingPage: React.FC = () => {
         return;
     }
 
-    const newSearchParams = new URLSearchParams({
-      location: currentLocation,
-      checkIn: currentCheckIn,
-      checkOut: currentCheckOut,
-      adults: currentAdults,
-      children: currentChildren,
-      rooms: String(rooms),
-    }).toString();
+const newSearchParams = new URLSearchParams({
+      location: searchLoc,
+      checkIn: searchCin,
+      checkOut: searchCout,
+      adults: currentAdults,
+      children: currentChildren,
+      rooms: String(searchRooms), // Ensure rooms is added here
+    }).toString();
 
     navigate(`/hotellists?${newSearchParams}`);
   };
@@ -124,6 +130,7 @@ const HotelListingPage: React.FC = () => {
     setLoading(true);
     setFetchError(null);
     setPage(1); // Page reset here
+    
 
     try {
       const token = sessionStorage.getItem("shineetrip_token");
@@ -135,16 +142,19 @@ const HotelListingPage: React.FC = () => {
       }
 
       const queryParams = new URLSearchParams();
-      if (location) queryParams.append("city", location); 
-      if (checkIn) queryParams.append("checkIn", checkIn);
-      if (checkOut) queryParams.append("checkOut", checkOut);
-      if (adults) queryParams.append("adults", adults);
-      if (children) queryParams.append("children", children);
-      if (searchParams.get("rooms")) queryParams.append("rooms", searchParams.get("rooms") || "1");
+      const currentUrlLoc = searchParams.get("location") || "";
+    const currentUrlCin = searchParams.get("checkIn") || "";
+    const currentUrlCout = searchParams.get("checkOut") || "";
+    const currentUrlAdl = searchParams.get("adults") || "2";
+    const currentUrlChl = searchParams.get("children") || "0";
+    const currentUrlRms = searchParams.get("rooms") || "1";
 
-      // Page 1 aur Limit set kiya
-      queryParams.append("page", '1'); 
-      queryParams.append("limit", limit.toString());
+    if (currentUrlLoc) queryParams.append("city", currentUrlLoc); 
+    if (currentUrlCin) queryParams.append("checkIn", currentUrlCin);
+    if (currentUrlCout) queryParams.append("checkOut", currentUrlCout);
+    if (currentUrlAdl) queryParams.append("adults", currentUrlAdl);
+    if (currentUrlChl) queryParams.append("children", currentUrlChl);
+    queryParams.append("rooms", currentUrlRms);
 
       const apiUrl = `http://46.62.160.188:3000/properties/search?${queryParams.toString()}`;
 
@@ -239,7 +249,7 @@ const HotelListingPage: React.FC = () => {
       setLoading(false);
       setHasSearched(true);
     }
-  }, [location, checkIn, checkOut, adults, children, navigate, limit]);
+  }, [location, checkIn, checkOut, adults, children, navigate, limit, searchParams]);
 
 
 // ----------------------------------------------------------------------
@@ -403,14 +413,24 @@ useEffect(() => {
 
 
   // Sync internal states when URL changes (Unchanged)
-  useEffect(() => {
-    setCurrentLocation(searchParams.get("location") || "");
-    setCurrentCheckIn(searchParams.get("checkIn") || getTodayDateString());
-    setCurrentCheckOut(searchParams.get("checkOut") || getTodayDateString());
-    setCurrentAdults(searchParams.get("adults") || "2");
-    setCurrentChildren(searchParams.get("children") || "0");
-    setRooms(searchParams.get("rooms") || "1");
-  }, [searchParams]);
+// Sync internal states when URL changes
+useEffect(() => {
+  // console.log("Syncing states with URL...");
+  const urlLoc = searchParams.get("location") || "";
+  const urlCin = searchParams.get("checkIn") || getTodayDateString();
+  const urlCout = searchParams.get("checkOut") || getTodayDateString();
+  const urlAdl = searchParams.get("adults") || "2";
+  const urlChl = searchParams.get("children") || "0";
+  const urlRms = searchParams.get("rooms") || "1";
+
+  // 💡 Ye saari states update karna zaroori hai
+  setCurrentLocation(urlLoc);
+  setCurrentCheckIn(urlCin);
+  setCurrentCheckOut(urlCout);
+  setCurrentAdults(urlAdl);
+  setCurrentChildren(urlChl);
+  setRooms(urlRms); // Isse rooms gayab nahi honge
+}, [searchParams]); // Jab bhi URL badle, ye states ko fresh kar dega
 
   // Scroll to top when component mounts (Unchanged)
   useEffect(() => {
@@ -443,22 +463,28 @@ useEffect(() => {
   const isLocationEmpty = currentLocation.trim() === "";
   
   // Function to navigate to View All Hotels (No location filter)
-  const handleViewAllHotels = () => {
-    // Server ko satisfy karne ke liye safe dates bhejte hain
-    const safeCheckIn = getTodayDateString(); 
-    const safeCheckOut = getTodayDateString(); 
+const handleViewAllHotels = () => {
+    // 1. Safe dates: Check-in aaj ki, aur Check-out kal ki (Kam se kam 1 din ka gap)
+    const safeCheckIn = getTodayDateString(); 
+    
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const yyyy = tomorrow.getFullYear();
+    const mm = String(tomorrow.getMonth() + 1).padStart(2, "0");
+    const dd = String(tomorrow.getDate()).padStart(2, "0");
+    const safeCheckOut = `${yyyy}-${mm}-${dd}`; 
 
-    const searchQuery = new URLSearchParams({
-        location: '', 
-        checkIn: safeCheckIn,
-        checkOut: safeCheckOut,
-        adults: currentAdults,
-        children: currentChildren,
-    }).toString();
-    
-    // Navigate to the listing page with safe defaults
-    navigate(`/hotellists?${searchQuery}`);
-  };
+    const searchQuery = new URLSearchParams({
+        location: '', 
+        checkIn: safeCheckIn,
+        checkOut: safeCheckOut,
+        adults: currentAdults,
+        children: currentChildren,
+        rooms: rooms || '1', // 💡 YE ZAROORI HAI: Rooms parameter add karo
+    }).toString();
+    
+    navigate(`/hotellists?${searchQuery}`);
+};
 
 
   const handleSearchClick = () => {
@@ -551,14 +577,14 @@ const SearchBar = (
       {/* Rooms Section */}
       <div className="flex items-center gap-1 bg-white/40 px-2 py-1 rounded-md">
         <button 
-          onClick={() => setRooms(String(Math.max(1, parseInt(rooms) - 1)))}
+          onClick={(e) => {e.preventDefault(); setRooms(String(Math.max(1, parseInt(rooms) - 1)))}}
           className="hover:text-[#D2A256] transition-colors"
         >
           <Minus size={12} />
         </button>
         <span className="min-w-[20px] text-center">{rooms || 1}</span>
         <button 
-          onClick={() => setRooms(String(parseInt(rooms) + 1))}
+          onClick={(e) => { e.preventDefault();setRooms(String(parseInt(rooms) + 1))}}
           className="hover:text-[#D2A256] transition-colors"
         >
           <Plus size={12} />
@@ -571,14 +597,14 @@ const SearchBar = (
       {/* Adults Section */}
       <div className="flex items-center gap-1 bg-white/40 px-2 py-1 rounded-md">
         <button 
-          onClick={() => setCurrentAdults(String(Math.max(1, parseInt(currentAdults) - 1)))}
+          onClick={(e) => { e.preventDefault(); setCurrentAdults(String(Math.max(1, parseInt(currentAdults) - 1)))}}
           className="hover:text-[#D2A256] transition-colors"
         >
           <Minus size={12} />
         </button>
         <span className="min-w-[20px] text-center">{currentAdults}</span>
         <button 
-          onClick={() => setCurrentAdults(String(parseInt(currentAdults) + 1))}
+          onClick={(e) => { e.preventDefault(); setCurrentAdults(String(parseInt(currentAdults) + 1))}}
           className="hover:text-[#D2A256] transition-colors"
         >
           <Plus size={12} />
@@ -591,14 +617,14 @@ const SearchBar = (
       {/* Children Section */}
       <div className="flex items-center gap-1 bg-white/40 px-2 py-1 rounded-md">
         <button 
-          onClick={() => setCurrentChildren(String(Math.max(0, parseInt(currentChildren) - 1)))}
+          onClick={(e) => { e.preventDefault(); setCurrentChildren(String(Math.max(0, parseInt(currentChildren) - 1)))}}
           className="hover:text-[#D2A256] transition-colors"
         >
           <Minus size={12} />
         </button>
         <span className="min-w-[20px] text-center">{currentChildren}</span>
         <button 
-          onClick={() => setCurrentChildren(String(parseInt(currentChildren) + 1))}
+          onClick={(e) => { e.preventDefault(); setCurrentChildren(String(parseInt(currentChildren) + 1))}}
           className="hover:text-[#D2A256] transition-colors"
         >
           <Plus size={12} />
@@ -699,6 +725,17 @@ const SearchBar = (
       </div>
     );
   }
+// Rendering section mein:
+if (loading) {
+  return (
+    <div className="min-h-screen bg-gray-50 pt-[116px] flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#D2A256] mx-auto mb-4"></div>
+        <p className="text-gray-600">Updating results...</p>
+      </div>
+    </div>
+  );
+}
 
 
   return (

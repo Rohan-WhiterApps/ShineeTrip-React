@@ -39,7 +39,7 @@ export default function HeroSection() {
   const [checkOut, setCheckOut] = useState("");
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
-  const [rooms, setRooms] = useState(0);
+  const [rooms, setRooms] = useState(1);
   const [errorPopup, setErrorPopup] = useState<string>(""); // Empty string means no popup
   
   // Login Popup State
@@ -220,7 +220,7 @@ useEffect(() => {
     checkOut: safeCheckOut,
     adults: '2',
     children: '0',
-    rooms: rooms.toString(),
+    rooms: '1',
   }).toString();
 
   navigate(`/hotellists?${searchQuery}`);
@@ -287,6 +287,16 @@ const handleSearch = () => {
         setErrorPopup("Please enter a location.");
         return;
     }
+
+    // if (searchTab === "Holiday Packages") {
+    //   const cityOnly = location.split(",")[0].trim();
+    //   const query = new URLSearchParams({
+    //     city: cityOnly,
+    //     departureDate: checkIn || new Date().toISOString().split("T")[0],
+    //   }).toString();
+    //   navigate(`/holiday-packages?${query}`); // Corrected route for packages
+    //   return;
+    // }
 
     // 3. Location Validity Check (using current available locations)
     const userInput = location.trim().toLowerCase();

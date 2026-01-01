@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 // Required icons for Search Bar
-import { MapPin, Calendar, Search, Users } from 'lucide-react'; 
+import { MapPin, Calendar, Search, Users, Plus, Minus } from 'lucide-react'; 
 
 import { RoomDetailsModal } from './Rooms_details_page'; 
 import RoomCard from '../components/ui/RoomCard'; 
@@ -43,6 +43,7 @@ export default function RoomBookingPage() {
     const initialCheckOut = searchParams.get("checkOut") || "";
     const initialAdults = searchParams.get("adults") || "2";
     const initialChildren = searchParams.get("children") || "0";
+    const initialRooms = searchParams.get("rooms") || "1";
     
     // Original filters for API call
     const checkIn = initialCheckIn;
@@ -54,6 +55,7 @@ export default function RoomBookingPage() {
     const [currentCheckOut, setCurrentCheckOut] = useState(initialCheckOut);
     const [currentAdults, setCurrentAdults] = useState(initialAdults);
     const [currentChildren, setCurrentChildren] = useState(initialChildren);
+    const [currentRooms, setCurrentRooms] = useState(initialRooms);
         
     // Search data for modal forwarding
     const searchParamData = { 
@@ -61,7 +63,8 @@ export default function RoomBookingPage() {
         checkIn: currentCheckIn, 
         checkOut: currentCheckOut, 
         adults: currentAdults, 
-        children: currentChildren 
+        children: currentChildren,
+        rooms: currentRooms,
     };
     
     // --- Handlers (Modal & Booking) ---
@@ -88,6 +91,7 @@ export default function RoomBookingPage() {
     params.set('checkOut', currentCheckOut);
     params.set('adults', currentAdults);
     params.set('children', currentChildren);
+    params.set('rooms', currentRooms);
 
     // 2. Property & Room Info
     params.set('propertyId', hotelId || ''); 
@@ -120,6 +124,7 @@ export default function RoomBookingPage() {
             checkOut: currentCheckOut,
             adults: currentAdults,
             children: currentChildren,
+            rooms: currentRooms,
         }).toString();
         
         // Navigate back to listing page with new parameters
@@ -145,6 +150,21 @@ useEffect(() => {
     fetchServices();
 }, [hotelId]);
 
+useEffect(() => {
+    const urlLoc = searchParams.get("location") || "";
+    const urlCin = searchParams.get("checkIn") || "";
+    const urlCout = searchParams.get("checkOut") || "";
+    const urlAdl = searchParams.get("adults") || "2";
+    const urlChl = searchParams.get("children") || "0";
+    const urlRms = searchParams.get("rooms") || "1";
+
+    setCurrentLocation(urlLoc);
+    setCurrentCheckIn(urlCin);
+    setCurrentCheckOut(urlCout);
+    setCurrentAdults(urlAdl);
+    setCurrentChildren(urlChl);
+    setCurrentRooms(urlRms); // Sync rooms
+}, [searchParams]);
     // --- Data Fetching (Fetch Hotel Details ONLY - Unchanged) ---
     useEffect(() => {
         const fetchHotelData = async () => {
@@ -242,7 +262,7 @@ useEffect(() => {
                     <div className="flex items-center justify-center gap-0 mb-4">
                         {/* Location Field */}
                         <div className="flex-1 max-w-[250px] bg-gray-200 px-6 py-2 border-r border-gray-300">
-                            <div className="text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">
+                            <div className="text-xs h-8 items-center flex font-semibold text-gray-700 mb-1 uppercase tracking-wide">
                                 CITY, AREA OR PROPERTY
                             </div>
                             <div className="flex items-center gap-2">
@@ -260,7 +280,7 @@ useEffect(() => {
 
                         {/* Check-in Field */}
                         <div className="flex-1 max-w-[200px] bg-gray-200 px-6 py-2 border-r border-gray-300">
-                            <div className="text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">
+                            <div className="text-xs h-8 items-center flex font-semibold text-gray-700 mb-1 uppercase tracking-wide">
                                 CHECK-IN
                             </div>
                             <div className="flex items-center gap-2">
@@ -277,7 +297,7 @@ useEffect(() => {
         
                         {/* Check-out Field */}
                         <div className="flex-1 max-w-[200px] bg-gray-200 px-6 py-2 border-r border-gray-300">
-                            <div className="text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">
+                            <div className="text-xs h-8 items-center flex font-semibold text-gray-700 mb-1 uppercase tracking-wide">
                                 CHECK-OUT
                             </div>
                             <div className="flex items-center gap-2">
@@ -293,32 +313,86 @@ useEffect(() => {
                         </div>
         
                         {/* Room & Guest Field & Search Button */}
-                        <div className="flex-1 max-w-[280px] bg-gray-200 px-6 py-2 flex items-center justify-between gap-4">
-                            <div>
-                                <div className="text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wide">
-                                    ROOM & GUEST
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Users className="w-4 h-4 text-[#D2A256]" />
-                                    {/* ✅ Editable Guest Count (Simple input, ideally a modal/stepper is better) */}
-                                    <input 
-                                        type="number"
-                                        min="1"
-                                        value={currentAdults}
-                                        onChange={(e) => setCurrentAdults(e.target.value)}
-                                        className="text-base font-normal text-gray-900 bg-transparent w-12 focus:outline-none"
-                                    />
-                                    <span className="text-base font-normal text-gray-900">Adults</span>
-                                </div>
-                            </div>
-                            {/* Search Button - Triggers navigation to Hotel Listing Page */}
-                            <button 
-                                onClick={handleSearch} // ✅ Navigate to hotel listing with new params
-                                className="bg-black text-white p-3 rounded-full hover:bg-gray-800 transition-colors shadow-md"
-                            >
-                                <Search className="w-4 h-4" />
-                            </button>
-                        </div>
+                        {/* Search Bar UI section mein ye change karo */}
+{/* 🟢 UPDATED COMPLETE: ROOMS, ADULTS & CHILDREN (Exactly matched with Listing Page) */}
+<div className="flex-1 w-full sm:max-w-[350px] bg-gray-200 px-4 py-3 border-r border-gray-300">
+  <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+    ROOMS & GUESTS
+  </div>
+  <div className="flex items-center gap-3">
+    <Users className="w-4 h-4 text-[#D2A256]" />
+    
+    <div className="flex items-center gap-2 text-gray-900 font-bold text-sm">
+      {/* Rooms Section */}
+      <div className="flex items-center gap-1 bg-white/40 px-2 py-1 rounded-md">
+        <button 
+          onClick={(e) => { e.preventDefault(); setCurrentRooms(String(Math.max(1, parseInt(currentRooms) - 1))) }}
+          className="hover:text-[#D2A256] transition-colors"
+        >
+          <Minus size={12} />
+        </button>
+        <span className="min-w-[15px] text-center">{currentRooms || 1}</span>
+        <button 
+          onClick={(e) => { e.preventDefault(); setCurrentRooms(String(parseInt(currentRooms) + 1)) }}
+          className="hover:text-[#D2A256] transition-colors"
+        >
+          <Plus size={12} />
+        </button>
+        <span className="text-[9px] text-gray-500 font-normal">Rm</span>
+      </div>
+
+      <span className="text-gray-400 font-normal">|</span>
+
+      {/* Adults Section */}
+      <div className="flex items-center gap-1 bg-white/40 px-2 py-1 rounded-md">
+        <button 
+          onClick={(e) => { e.preventDefault(); setCurrentAdults(String(Math.max(1, parseInt(currentAdults) - 1))) }}
+          className="hover:text-[#D2A256] transition-colors"
+        >
+          <Minus size={12} />
+        </button>
+        <span className="min-w-[15px] text-center">{currentAdults}</span>
+        <button 
+          onClick={(e) => { e.preventDefault(); setCurrentAdults(String(parseInt(currentAdults) + 1)) }}
+          className="hover:text-[#D2A256] transition-colors"
+        >
+          <Plus size={12} />
+        </button>
+        <span className="text-[9px] text-gray-500 font-normal">Ad</span>
+      </div>
+
+      <span className="text-gray-400 font-normal">|</span>
+
+      {/* Children Section - AB YE BHI HAI ✅ */}
+      <div className="flex items-center gap-1 bg-white/40 px-2 py-1 rounded-md">
+        <button 
+          onClick={(e) => { e.preventDefault(); setCurrentChildren(String(Math.max(0, parseInt(currentChildren) - 1))) }}
+          className="hover:text-[#D2A256] transition-colors"
+        >
+          <Minus size={12} />
+        </button>
+        <span className="min-w-[15px] text-center">{currentChildren}</span>
+        <button 
+          onClick={(e) => { e.preventDefault(); setCurrentChildren(String(parseInt(currentChildren) + 1)) }}
+          className="hover:text-[#D2A256] transition-colors"
+        >
+          <Plus size={12} />
+        </button>
+        <span className="text-[9px] text-gray-500 font-normal">Ch</span>
+      </div>
+    </div>
+
+    {/* Search Button */}
+    <div className="flex-shrink-0 ml-auto">
+      <button
+        onClick={handleSearch}
+        className="bg-[#D2A256] text-white p-2.5 rounded-full hover:bg-[#c2934b] transition-all shadow-md"
+      >
+        <Search className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+</div>
                     </div>
                     {/* Progress Steps */}
                     <div className="flex items-center justify-center gap-4">

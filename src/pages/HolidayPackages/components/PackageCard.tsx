@@ -162,14 +162,14 @@ export const PackageCard = ({ data }: PackageCardProps) => {
             <button onClick={(e) =>{ e.stopPropagation(); setShowPricePopup(false)}}><X size={20} className="text-gray-400" /></button>
           </div>
           <div className="px-6 space-y-3">
-            <div onClick={() => navigate(`/holiday-package/${data.id}`)} className="border border-gray-200 rounded-2xl p-4 flex justify-between items-center cursor-pointer hover:bg-blue-50 transition-colors">
+            <div onClick={() => navigate(`/package-detail/${data.id}`)} className="border border-gray-200 rounded-2xl p-4 flex justify-between items-center cursor-pointer hover:bg-blue-50 transition-colors">
               <div>
                 <p className="text-[10px] text-gray-400 font-bold uppercase">With Flight</p>
                 <h4 className="font-bold text-xl text-gray-900">₹{parsePrice(data.price?.flight_price)}</h4>
               </div>
               <ChevronRight size={24} className="text-[#2EB159]" />
             </div>
-            <div onClick={() => navigate(`/holiday-package/${data.id}`)} className="border-2 border-[#EAD8B1] bg-[#F9F3E5] rounded-2xl p-4 flex justify-between items-center cursor-pointer hover:bg-[#f3ead4] transition-colors">
+            <div onClick={() => navigate(`/package-detail/${data.id}`)} className="border-2 border-[#EAD8B1] bg-[#F9F3E5] rounded-2xl p-4 flex justify-between items-center cursor-pointer hover:bg-[#f3ead4] transition-colors">
               <div>
                 <p className="text-[10px] text-gray-700 font-bold uppercase">Without Flight</p>
                 <h4 className="font-bold text-xl text-gray-900">₹{parsePrice(data.price?.base_fare)}</h4>

@@ -17,8 +17,8 @@ const HolidayPackages = () => {
         const city = searchParams.get("city") || "";
         const date = searchParams.get("departureDate") || "";
         
-        // 1. LocalStorage se token nikalna
-        const token = localStorage.getItem("shineetrip_token");
+        
+        const token = sessionStorage.getItem("shineetrip_token");
 
         const url = `http://46.62.160.188:3000/holiday-package?city=${city}&departureDate=${date}`;
         

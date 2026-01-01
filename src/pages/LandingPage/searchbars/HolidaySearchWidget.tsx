@@ -11,7 +11,7 @@ export const HolidaySearchWidget = () => {
 
   const handleSearch = () => {
     // 1. Token Check (Authentication)
-    const token = localStorage.getItem("shineetrip_token");
+    const token = sessionStorage.getItem("shineetrip_token");
     if (!token) {
       setShowLoginPopup(true);
       return;
