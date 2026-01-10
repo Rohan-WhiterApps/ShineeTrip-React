@@ -9,6 +9,7 @@ import {
     Users
 } from 'lucide-react';
 import { format } from 'date-fns'; 
+import InvoicePDF from '@/components/ui/InvoicePDF';
 
 // --- Interfaces Fixed based on API Response ---
 
@@ -69,6 +70,7 @@ const formatShortDate = (dateStr?: string) => {
 // Fixed Status Pill to match API Strings like "Complete payment received"
 const BookingStatusPill: React.FC<{ status: string }> = ({ status }) => {
     const lowerStatus = status.toLowerCase();
+    
     let Icon = CheckCircle;
     let text = status; 
     let colorClass = 'text-gray-600';
@@ -257,6 +259,7 @@ return (
     );
 };
 
+
 const handleDownloadPDF = (order: Order, room: OrderRoomDetail) => {
     const userName = sessionStorage.getItem('shineetrip_name') || "Guest User";
     const userEmail = sessionStorage.getItem('shineetrip_email') || "Not Provided";
@@ -433,6 +436,7 @@ const MyBookingsPage: React.FC = () => {
     const [filterStatus, setFilterStatus] = useState('all'); 
     const [selectedBooking, setSelectedBooking] = useState<{order: Order, room: OrderRoomDetail} | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
 
     const openDetails = (order: Order, room: OrderRoomDetail) => {
         setSelectedBooking({ order, room });
@@ -470,7 +474,6 @@ const MyBookingsPage: React.FC = () => {
             }
 
             const data: Order[] = await response.json();
-            // Sorting by date (Newest first)
             const sortedData = data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
             setOrders(sortedData); 
 
@@ -497,8 +500,26 @@ const MyBookingsPage: React.FC = () => {
             return () => clearTimeout(timer);
         }
     }, [highlightId, loading, orders]);
-    
-    // Fixed Filtering Logic to match Partial Strings
+
+    const handleGetInvoice = async (orderId: number) => {
+        try {
+            const token = sessionStorage.getItem('shineetrip_token');
+            const response = await fetch(`http://46.62.160.188:3000/invoices?orderId=${orderId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const result = await response.json();
+
+            if (result.data && result.data.length > 0) {
+                setSelectedInvoice(result.data[0]);
+            } else {
+                alert("Invoice not generated yet for this order.");
+            }
+        } catch (err) {
+            console.error("Error:", err);
+            alert("Failed to fetch invoice.");
+        }
+    };
+
     const filteredOrders = orders.filter(order => {
         if (filterStatus === 'all') return true;
         if (filterStatus === 'confirmed') return order.status.toLowerCase().includes('complete') || order.status.toLowerCase().includes('received');
@@ -515,137 +536,129 @@ const MyBookingsPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 pt-24 pb-12">
-            <div className="max-w-7xl mt-16 mx-auto px-6 grid grid-cols-1 lg:grid-cols-4 gap-8">
-                
-                {/* Sidebar */}
-                <div className="lg:col-span-1">
-                    <div className="bg-white rounded-xl shadow-sm border p-6">
-                        <h3 className="text-xl font-bold mb-4 border-b pb-2">Profile</h3>
-                        <div className="space-y-1">
-                            <ProfileNavItem icon={User} label="About me" onClick={() => navigate('/profile')} />
-                            <ProfileNavItem icon={ShoppingBag} label="My booking" active={true} onClick={() => navigate('/mybooking')} />
+            {/* ✅ ADD THIS STYLE: To prevent overlap during print */}
+            <style dangerouslySetInnerHTML={{ __html: `
+                @media print {
+                    body { background: white !important; }
+                    .no-print-main { display: none !important; }
+                    .print-only-invoice { display: block !important; position: absolute; top: 0; left: 0; width: 100%; z-index: 9999; }
+                }
+            `}} />
+
+            {/* ✅ WRAP EVERYTHING IN no-print-main */}
+            <div className={`no-print-main ${selectedInvoice ? 'hidden' : ''}`}>
+                <div className="max-w-7xl mt-16 mx-auto px-6 grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    {/* Sidebar */}
+                    <div className="lg:col-span-1">
+                        <div className="bg-white rounded-xl shadow-sm border p-6">
+                            <h3 className="text-xl font-bold mb-4 border-b pb-2">Profile</h3>
+                            <div className="space-y-1">
+                                <ProfileNavItem icon={User} label="About me" onClick={() => navigate('/profile')} />
+                                <ProfileNavItem icon={ShoppingBag} label="My booking" active={true} onClick={() => navigate('/mybooking')} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="lg:col-span-3 space-y-6">
+                        <h1 className="text-3xl font-extrabold flex items-center gap-2">
+                            My Bookings <ShoppingBag className="w-7 h-7 text-[#D2A256]" />
+                        </h1>
+                        
+                        {/* Filters */}
+                        <div className="flex items-center bg-white p-4 rounded-xl shadow-sm border gap-3">
+                            {['all', 'awaiting payment', 'confirmed', 'cancelled'].map(status => (
+                                <button
+                                    key={status}
+                                    onClick={() => setFilterStatus(status)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
+                                        filterStatus === status 
+                                        ? 'bg-[#D2A256] text-white border-[#D2A256]' 
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    {status.toUpperCase()}
+                                </button>
+                            ))}
+                            <Search className="w-5 h-5 text-gray-400 ml-auto" />
+                        </div>
+
+                        {/* Booking Cards */}
+                        <div className="space-y-6">
+                            {filteredOrders.length > 0 ? (
+                            filteredOrders.map(order => (
+                                <div key={order.id} id={`booking-card-${order.id}`} className="transition-all duration-500">
+                                    {order?.orderRooms?.map(room => (
+                                        <div key={room.id} className="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-4">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <BookingStatusPill status={order.status || 'Pending'} /> 
+                                                <span className='text-gray-500 text-sm'>• Out: {formatDayAndDate(room?.checkOut)}</span>
+                                            </div>
+                        
+                                            <div className="flex gap-5 border-b pb-5">
+                                                <img
+                                                    src={room?.property?.images?.[0]?.image || "https://placehold.co/400x400?text=No+Image"}
+                                                    alt="Hotel"
+                                                    className="w-28 h-28 object-cover rounded-xl"
+                                                    onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/400x400?text=Hotel" }}
+                                                />
+                        
+                                                <div className="flex-1">
+                                                    <h3 className="text-xl font-bold">{room?.property?.name || 'Unknown Hotel'}</h3>
+                                                    <p className="text-sm text-gray-500">{room?.property?.city || 'Location N/A'}</p>
+                                                    <div className="mt-3 flex flex-col gap-1 text-sm">
+                                                        <p>Room: <span className='font-semibold'>{room?.roomType?.room_type || 'Standard Room'}</span></p>
+                                                        <p>Guests: <span className='font-semibold'>{room?.adults || 0} Adults</span></p>
+                                                        <p className='text-[#D2A256] font-bold mt-1'>
+                                                            {formatShortDate(room?.checkIn)} - {formatShortDate(room?.checkOut)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className='pt-4 flex flex-wrap gap-3'>
+                                                <button onClick={() => navigate(`/room-booking/${room?.property?.id}`)} className="flex-1 bg-white border border-[#D2A256] text-[#D2A256] py-2 rounded-lg text-sm font-bold hover:bg-yellow-50">Book Again</button>
+                                                <button onClick={() => openDetails(order, room)} className="flex-1 border border-gray-400 text-gray-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100">View Details</button>
+                                                <button onClick={() => handleGetInvoice(order.id)} className="flex-1 border border-gray-300 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2 hover:bg-gray-50">
+                                                    <FileText className='w-4 h-4'/> Invoice
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ))
+                            ) : (
+                                <div className="text-center p-20 bg-white rounded-xl border-2 border-dashed">
+                                    <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                                    <p className="text-gray-500 font-medium">No bookings found for this category.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
-
-                {/* Main Content */}
-                <div className="lg:col-span-3 space-y-6">
-                    <h1 className="text-3xl font-extrabold flex items-center gap-2">
-                        My Bookings <ShoppingBag className="w-7 h-7 text-[#D2A256]" />
-                    </h1>
-                    
-                    {/* Filters */}
-                    <div className="flex items-center bg-white p-4 rounded-xl shadow-sm border gap-3">
-                        {['all', 'awaiting payment', 'confirmed', 'cancelled'].map(status => (
-                            <button
-                                key={status}
-                                onClick={() => setFilterStatus(status)}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
-                                    filterStatus === status 
-                                    ? 'bg-[#D2A256] text-white border-[#D2A256]' 
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                }`}
-                            >
-                                {status.toUpperCase()}
-                            </button>
-                        ))}
-                        <Search className="w-5 h-5 text-gray-400 ml-auto" />
-                    </div>
-
-                    {/* Booking Cards */}
-                    <div className="space-y-6">
-                        {filteredOrders.length > 0 ? (
-                        filteredOrders.map(order => (
-                            <div key={order.id} id={`booking-card-${order.id}`} className="transition-all duration-500">
-                                {/* ✅ Added order?. check */}
-                                {order?.orderRooms?.map(room => (
-                                    <div key={room.id} className="bg-white rounded-xl shadow-md border border-gray-200 p-6 mb-4">
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <BookingStatusPill status={order.status || 'Pending'} /> 
-                                            <span className='text-gray-500 text-sm'>• Out: {formatDayAndDate(room?.checkOut)}</span>
-                                        </div>
-                    
-                                        <div className="flex gap-5 border-b pb-5">
-                                            <img
-                                                // ✅ Added optional chaining for property images
-                                                src={room?.property?.images?.[0]?.image || "https://placehold.co/400x400?text=No+Image"}
-                                                alt="Hotel"
-                                                className="w-28 h-28 object-cover rounded-xl"
-                                                onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/400x400?text=Hotel" }}
-                                            />
-                    
-                                            <div className="flex-1">
-                                                {/* ✅ Added safety for property name and city */}
-                                                <h3 className="text-xl font-bold">{room?.property?.name || 'Unknown Hotel'}</h3>
-                                                <p className="text-sm text-gray-500">{room?.property?.city || 'Location N/A'}</p>
-                                                
-                                                <div className="mt-3 flex flex-col gap-1 text-sm">
-                                                    {/* ✅ YAHAN CRASH HO RAHA THA: Added safety for room_type */}
-                                                    <p>Room: <span className='font-semibold'>{room?.roomType?.room_type || 'Standard Room'}</span></p>
-                                                    <p>Guests: <span className='font-semibold'>{room?.adults || 0} Adults</span></p>
-                                                    <p className='text-[#D2A256] font-bold mt-1'>
-                                                        {formatShortDate(room?.checkIn)} - {formatShortDate(room?.checkOut)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        {/* Buttons Section */}
-                                        <div className='pt-4 flex flex-wrap gap-3'>
-                                            <button 
-                                                onClick={() => {
-                                                    // ✅ Safe ID access
-                                                    const hotelId = room?.property?.id;
-                                                    if(!hotelId) return;
-                    
-                                                    const params = new URLSearchParams({
-                                                        location: room?.property?.city || '',
-                                                        checkIn: room?.checkIn || '',
-                                                        checkOut: room?.checkOut || '',
-                                                        adults: String(room?.adults || 2),
-                                                        children: String(room?.children || 0),
-                                                        propertyId: String(hotelId)
-                                                    }).toString();
-                                                    
-                                                    navigate(`/room-booking/${hotelId}?${params}`);
-                                                }}
-                                                className="flex-1 bg-white border border-[#D2A256] text-[#D2A256] py-2 rounded-lg text-sm font-bold hover:bg-yellow-50"
-                                            >
-                                                Book Again
-                                            </button>
-                                            <button 
-                                                onClick={() => openDetails(order, room)}
-                                                className="flex-1 border border-gray-400 text-gray-900 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-100"
-                                            >
-                                                View Details
-                                            </button>
-                                            <button className="flex-1 border border-gray-300 py-2 rounded-lg text-sm font-bold flex items-center justify-center gap-2">
-                                                <FileText className='w-4 h-4'/> Invoice
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ))
-                    ) : (
-                            <div className="text-center p-20 bg-white rounded-xl border-2 border-dashed">
-                                <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                                <p className="text-gray-500 font-medium">No bookings found for this category.</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
             </div>
-            <BookingDetailModal 
-    isOpen={isModalOpen} 
-    onClose={() => setIsModalOpen(false)} 
-    data={selectedBooking} 
-/>
+
+            <BookingDetailModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} data={selectedBooking} />
+
+            {/* ✅ UPDATED: Invoice View with z-[200] and print class */}
+            {selectedInvoice && (
+                <div className="fixed inset-0 z-[200] bg-white overflow-auto print-only-invoice">
+                    {/* Back Button Container */}
+                    <div className="max-w-[800px] mx-auto p-4 flex items-center no-print border-b mb-4">
+                        <button 
+                            onClick={() => setSelectedInvoice(null)}
+                            className="bg-black text-white px-4 py-2 rounded-full flex items-center gap-2 font-bold hover:bg-gray-800 transition-all shadow-md"
+                        >
+                            <ArrowLeft size={16} /> Back to My Bookings
+                        </button>
+                    </div>
+                    
+                    {/* Component Rendering */}
+                    <InvoicePDF invoiceData={selectedInvoice} />
+                </div>
+            )}
         </div>
     );
 };
-
-
-
 
 export default MyBookingsPage;

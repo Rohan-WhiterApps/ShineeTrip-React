@@ -141,13 +141,24 @@ const PackageDetailsPage = () => {
             )}
             
             {activeTab === 'policies' && (
-              <div className="p-8 bg-white rounded-[30px] border border-gray-100 shadow-sm">
-                <h3 className="text-xl font-bold text-[#2C4A5E] mb-6 border-b pb-4">Policies & Cancellation</h3>
-                <p className="text-sm text-gray-500 leading-relaxed italic whitespace-pre-wrap bg-gray-50 p-6 rounded-2xl border border-dashed">
-                  {holiday?.policies || "Standard policies apply."}
-                </p>
-              </div>
-            )}
+  <div className="p-8 bg-white rounded-[30px] border border-gray-100 shadow-sm animate-in fade-in duration-500">
+    <h3 className="text-xl font-bold text-[#2C4A5E] mb-6 border-b pb-4">
+      Policies & Cancellation
+    </h3>
+    
+    <div 
+      /* break-words aur overflow-hidden lagane se text bahar nahi bhagega */
+      className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-6 rounded-2xl border border-dashed overflow-hidden wrap-break-word"
+      style={{ 
+        wordBreak: 'break-word', 
+        overflowWrap: 'anywhere' 
+      }}
+      dangerouslySetInnerHTML={{ 
+        __html: holiday?.policies || "Standard policies apply." 
+      }} 
+    />
+  </div>
+)}
           </div>
 
           <div className="lg:col-span-4">
