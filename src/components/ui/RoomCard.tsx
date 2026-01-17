@@ -200,7 +200,7 @@ useEffect(() => {
   return (
     <p className="text-sm text-gray-600 mb-6 leading-relaxed max-w-3xl">
       {short}
-      {isLong && (
+      { (
         <>
           {' '}
           <span

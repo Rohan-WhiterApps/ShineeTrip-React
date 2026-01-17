@@ -23,14 +23,15 @@ const WriteBrandReview: React.FC = () => {
 
    const [cuName, setCuName] = useState<string>("");
   const [cuAddr, setCuAddr] = useState<string>("");
-  const [cuImg, setCuImg] = useState<string>("");
+  
   
 
   const [submitting, setSubmitting] = useState<boolean>(false);
 
   const token = sessionStorage.getItem("shineetrip_token");
-  //const cuName = sessionStorage.getItem("shineetrip_name");
+  const cuImg = sessionStorage.getItem("shineetrip_profile_image");
   const customerDbId = sessionStorage.getItem("shineetrip_db_customer_id");
+ 
 
   useEffect(() => {
   const fetchCustomerData = async () => {
@@ -58,7 +59,7 @@ const WriteBrandReview: React.FC = () => {
       
       setCuName(`${data.first_name} ${data.last_name}`);
       setCuAddr(data.address || "");
-      setCuImg("https://example.com/avatars/jane.png");//error- backend gives null here
+      
     } catch (error) {
       toast.error("Unable to load profile details");
     }
@@ -75,7 +76,7 @@ const WriteBrandReview: React.FC = () => {
           review,
           cu_name: cuName,
           cu_addr: cuAddr,
-          cu_img: cuImg,});
+          cu_img: cuImg});
 
   if (!rating || !review.trim()) {
     toast.error("Rating and review are required");

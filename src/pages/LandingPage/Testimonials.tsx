@@ -44,6 +44,23 @@ export default function Testimonials() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [currentIdx,setCurrIdx]=useState<number>(0);
+
+  useEffect(()=>{
+    if (testimonials.length <= 3) return;
+
+    const interval= setInterval(()=>{
+
+      setCurrIdx((prev)=>{
+        return prev+3 >= testimonials.length ?0:prev+3
+      });
+
+    },4000);
+
+    return () => clearInterval(interval);
+
+  },[testimonials])
+
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
@@ -102,6 +119,8 @@ export default function Testimonials() {
     return null; 
   }
 
+
+
   return (
     <div className="pt-12 bg-white">
       <section className="py-16 bg-[#2C3C3C] font-opensans">
@@ -127,72 +146,94 @@ export default function Testimonials() {
           </div>
 
           {/* Dynamic Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {testimonials.length > 0 ? (
-              testimonials.map((testimonial) => (
-                <Card
-                  key={testimonial.id}
-                  className="relative bg-[#425656] border-0 p-8 overflow-hidden group hover:-translate-y-1 transition-all duration-300 rounded-sm shadow-lg hover:shadow-2xl"
-                >
-                  {/* Background Number Watermark */}
-                  <div className="absolute top-2 right-4 text-[#4A5E5E] text-[100px] font-bold leading-none pointer-events-none opacity-40 font-serif select-none">
-                    {testimonial.number}
-                  </div>
+    
 
-                  <div className="relative z-10 flex flex-col h-full">
-                      {/* Rating Stars */}
-                      <div className="flex gap-1 mb-4">
-                        {[...Array(5)].map((_, i) => (
-                          <Star 
-                            key={i} 
-                            size={16} 
-                            className={`${i < testimonial.rating ? "fill-[#D4A76A] text-[#D4A76A]" : "fill-gray-600 text-gray-600"}`} 
-                          />
-                        ))}
+          {testimonials.length === 0 ? (
+            
+            <div className="text-center py-16 text-gray-400">
+              <p className="text-sm tracking-wide">No stories available yet.</p>
+            </div>
+          ) : (
+            /* ---------- Slider ---------- */
+            <div className="overflow-hidden">
+              <div
+                className="flex transition-transform duration-700 ease-in-out"
+                style={{
+                  transform: `translateX(-${(currentIdx / 3) * 100}%)`,
+                }}
+              >
+                {testimonials.map((testimonial) => (
+                  <div
+                    key={testimonial.id}
+                    className="w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-3"
+                  >
+                    <Card className="relative bg-[#425656] border-0 p-8 overflow-hidden group hover:-translate-y-1 transition-all duration-300 rounded-sm shadow-lg hover:shadow-2xl h-full">
+                      
+                      {/* Background Number Watermark */}
+                      <div className="absolute top-2 right-4 text-[#4A5E5E] text-[100px] font-bold leading-none pointer-events-none opacity-40 font-serif select-none">
+                        {testimonial.number}
                       </div>
 
-                      {/* Title Badge */}
-                      <div className="mb-4">
-                        <span className="bg-[#8B7355]/30 border border-[#A5865F]/50 px-3 py-1.5 rounded-sm text-[#D4A76A] text-[10px] font-bold tracking-[0.15em] uppercase">
-                          {testimonial.package}
-                        </span>
-                      </div>
-
-                      {/* Review Text */}
-                      <p className="text-gray-200 mb-6 leading-relaxed text-[14px] flex-grow italic">
-                        "{testimonial.content}"
-                      </p>
-
-                      {/* User Info Footer */}
-                      <div className="flex items-center gap-4 mt-auto border-t border-white/10 pt-4">
-                        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border border-[#D4A76A]/50">
-                          <img 
-                            src={testimonial.image} 
-                            alt={testimonial.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                                e.currentTarget.src = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80";
-                            }}
-                          />
+                      <div className="relative z-10 flex flex-col h-full">
+                        
+                        {/* Rating Stars */}
+                        <div className="flex gap-1 mb-4">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              size={16}
+                              className={
+                                i < testimonial.rating
+                                  ? "fill-[#D4A76A] text-[#D4A76A]"
+                                  : "fill-gray-600 text-gray-600"
+                              }
+                            />
+                          ))}
                         </div>
-                        <div>
-                          <p className="font-bold text-white text-[13px] leading-tight">
-                            {testimonial.name}
-                          </p>
-                          <p className="text-[#D4A76A] text-[11px] mt-0.5 font-light">
-                            {testimonial.location}
-                          </p>
+
+                        {/* Package Badge */}
+                        <div className="mb-4">
+                          <span className="bg-[#8B7355]/30 border border-[#A5865F]/50 px-3 py-1.5 rounded-sm text-[#D4A76A] text-[10px] font-bold tracking-[0.15em] uppercase">
+                            {testimonial.package}
+                          </span>
                         </div>
+
+                        {/* Review Text */}
+                        <p className="text-gray-200 mb-6 leading-relaxed text-[14px] flex-grow italic">
+                          "{testimonial.content}"
+                        </p>
+
+                        {/* User Info */}
+                        <div className="flex items-center gap-4 mt-auto border-t border-white/10 pt-4">
+                          <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border border-[#D4A76A]/50">
+                            <img
+                              src={testimonial.image}
+                              alt={testimonial.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src =
+                                  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80";
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <p className="font-bold text-white text-[13px] leading-tight">
+                              {testimonial.name}
+                            </p>
+                            <p className="text-[#D4A76A] text-[11px] mt-0.5 font-light">
+                              {testimonial.location}
+                            </p>
+                          </div>
+                        </div>
+
                       </div>
+                    </Card>
                   </div>
-                </Card>
-              ))
-            ) : (
-                <div className="col-span-3 text-center py-10 text-gray-400">
-                    <p>No stories available yet.</p>
-                </div>
-            )}
-          </div>
+                ))}
+              </div>
+            </div>
+          )}
+
 
         </div>
       </section>
