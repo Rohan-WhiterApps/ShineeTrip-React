@@ -527,7 +527,7 @@ const SearchBar = (
           
           {/* Location Field */}
           <div className="flex-1 w-full sm:max-w-[250px] bg-[#F4F1EC]/20 px-4 py-3 rounded-tl-[24px] rounded-bl-[24px]  sm:border-r sm:border-b-0 border-gray-300">
-            <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+            <div className="text-[14px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">
               CITY, AREA OR PROPERTY
             </div>
             <div className="flex items-center gap-2">
@@ -536,7 +536,7 @@ const SearchBar = (
                 type="text"
                 value={currentLocation}
                 onChange={(e) => setCurrentLocation(e.target.value)}
-                className="text-base font-medium text-gray-900 bg-transparent w-full focus:outline-none"
+                className="text-base font-[700] text-[18px] text-gray-900 bg-transparent w-full focus:outline-none"
                 placeholder="Enter location"
               />
             </div>
@@ -544,28 +544,28 @@ const SearchBar = (
 
           {/* Check-in Field */}
           <div className="flex-1 w-full sm:max-w-[200px] bg-[#F4F1EC]/20  px-4 py-3 border-b sm:border-r sm:border-b-0 border-gray-300">
-            <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">CHECK-IN</div>
+            <div className="text-[14px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">CHECK-IN</div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-[#D2A256]" />
               <input
                 type="date"
                 value={currentCheckIn}
                 onChange={(e) => setCurrentCheckIn(e.target.value)}
-                className="text-base font-medium text-gray-900 bg-transparent w-full focus:outline-none"
+                className="text-base font-[700] text-[18px] text-gray-900 bg-transparent w-full focus:outline-none"
               />
             </div>
           </div>
 
           {/* Check-out Field */}
           <div className="flex-1 w-full sm:max-w-[200px] bg-[#F4F1EC]/20 px-4 py-3 border-b sm:border-r sm:border-b-0 border-gray-300">
-            <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">CHECK-OUT</div>
+            <div className="text-[14px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">CHECK-OUT</div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-[#D2A256]" />
               <input
                 type="date"
                 value={currentCheckOut}
                 onChange={(e) => setCurrentCheckOut(e.target.value)}
-                className="text-base font-medium text-gray-900 bg-transparent w-full focus:outline-none"
+                className="text-base font-[700] text-[18px] text-gray-900 bg-transparent w-full focus:outline-none"
               />
             </div>
           </div>
@@ -574,7 +574,7 @@ const SearchBar = (
           {/* Note: Isme right border sirf sm:screen par chahiye, mobile par nahi, isliye border-r hataya */}
         {/* 🟢 UPDATED: ROOMS & GUESTS (With Rooms and Better Design) */}
 <div className="flex-1 w-full sm:max-w-[320px] bg-[#F4F1EC]/20 px-4 py-3 border-b sm:border-r sm:border-b-0 border-gray-300">
-  <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+  <div className="text-[14px] font-semibold text-gray-500 mb-1 uppercase tracking-wide">
     ROOMS & GUESTS
   </div>
   <div className="flex items-center gap-3">
@@ -661,7 +661,7 @@ const SearchBar = (
   <div className="flex items-center gap-6 flex-wrap justify-center">
     
     {/* 1. Sort Label (Desktop Only) */}
-    <div className="hidden sm:flex items-center gap-2 text-gray-900 font-semibold text-sm">
+    <div className="hidden sm:flex items-center gap-2 text-gray-900 font-[700] text-sm">
       <SlidersHorizontal className="w-4 h-4 text-[#D2A256]" />
       <span>Sort By:</span>
     </div>
@@ -673,7 +673,7 @@ const SearchBar = (
   key={option}
   onClick={() => setSortBy(option)}
   className="
-    px-4 py-1.5 rounded-full text-xs font-medium border
+    px-4 py-1.5 rounded-full text-[15px] font-[600] border
     bg-[#F4F1EC]/20 text-gray-700 border-[#E0DACF]
     hover:bg-[#D2A256] hover:text-white hover:border-[#D2A256]
     transition-all duration-200
@@ -758,7 +758,7 @@ if (loading) {
       <div className="max-w-7xl mx-auto px-6 py-6">
         {/* Results Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-[24px] font-[600] text-gray-900">
             Showing Properties in {location || "All Destinations"}
           </h1>
           <span className="text-sm text-gray-600">
@@ -828,7 +828,7 @@ if (loading) {
                       {/* Left Column: Hotel Details */}
                       <div className="flex-1 ">
                         {/* Hotel Name and Location */}
-                        <h2 className="text-xl font-bold text-gray-900 mb-1">
+                        <h2 className="text-[24px] font-[600] text-gray-900 mb-1">
                           {hotel.name}
                         </h2>
                         {/* FIX 3: ADDED DYNAMIC RATING AND REVIEW COUNT DISPLAY HERE */}
@@ -908,7 +908,7 @@ if (loading) {
                         {/* Coupon Section - RED BADGE LIKE FIGMA */}
 <div className="mb-6">
   {/* Coupons Heading */}
-  <h3 className="text-sm font-semibold text-gray-900 mb-3">
+  <h3 className="text-[18px] font-semibold text-gray-900 mb-3">
     Coupons
   </h3>
 
@@ -966,7 +966,7 @@ if (loading) {
     </div>
 
     {/* Discounted Price */}
-    <div className="text-2xl font-bold text-green-500">
+    <div className="text-[30px] font-[600] text-green-500">
       ₹{hotel.price.toLocaleString()}
     </div>
   </div>
@@ -985,7 +985,7 @@ if (loading) {
       e.stopPropagation();
       handleHotelClick(hotel.id);
     }}
-    className="w-full bg-black text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-colors text-sm"
+    className="w-full bg-black text-white px-6 py-2 rounded-lg font-semibold hover:bg-gray-800 transition-colors text-[18px]"
   >
     Book Now
   </button>

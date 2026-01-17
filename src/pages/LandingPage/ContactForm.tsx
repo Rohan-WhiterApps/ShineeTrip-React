@@ -4,6 +4,8 @@ import type React from "react"
 import { useState } from "react"
 import { Phone, Mail, MapPin, Send } from "lucide-react"
 import toast, { Toaster } from 'react-hot-toast'
+import WriteBrandReview from "@/components/ui/WriteBrandReview"
+
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
@@ -17,6 +19,8 @@ export default function ContactForm() {
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
+
 
   // Strict Validation Logic
   const validateForm = () => {
@@ -133,6 +137,8 @@ export default function ContactForm() {
     }
   }
 
+
+
   return (
     <>
       <Toaster />
@@ -198,6 +204,7 @@ export default function ContactForm() {
             <button 
               className="w-full bg-black text-white py-4 mt-[30px] rounded-md font-semibold text-base hover:bg-black transition-colors"
               // onClick={() => window.open('https://g.page/r/YOUR_GOOGLE_REVIEW_LINK/review', '_blank')}
+              onClick={() => setIsReviewOpen(true)}
             >
               Write a Review
             </button>
@@ -319,6 +326,34 @@ export default function ContactForm() {
         </div>
       </div>
     </section>
+    {/* Review Modal */}
+    {isReviewOpen && (
+      <div
+        className="fixed inset-0   z-50 flex items-center justify-center px-4"
+      >
+        {/* Modal Container */}
+        <div
+          className="relative border border-black w-full max-w-3xl bg-white rounded-2xl shadow-2xl
+                    max-h-[90vh] overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Close Button */}
+          <button
+            className="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl z-20"
+            onClick={() => setIsReviewOpen(false)}
+          >
+            ✕
+          </button>
+
+          {/* Scrollable Content */}
+          <div className="overflow-y-auto max-h-[90vh]">
+            <WriteBrandReview  />
+          </div>
+        </div>
+      </div>
+    )}
+
+
     </>
   )
 }

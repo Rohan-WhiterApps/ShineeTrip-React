@@ -167,8 +167,8 @@ useEffect(() => {
                         {/* Header with Title & Price Badge */}
                         <div className="flex flex-col md:flex-row justify-between items-start gap-2 mb-2">
                              <div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-1">{room.room_type}</h3>
-                                <div className="flex items-center gap-4 text-gray-500 text-sm">
+                                <h3 className="text-[24px]   font-[600] text-gray-900 mb-1">{room.room_type}</h3>
+                                <div className="flex items-center gap-4 text-gray-500 text-[14px] font-[400]">
                                     <div className="flex items-center gap-1">
                                         <Users className="w-4 h-4" />
                                         <span>{occupancy.max_occ} Guests</span>
@@ -228,8 +228,8 @@ useEffect(() => {
         <div className="flex flex-col justify-between border hover:border-[#D2A256] hover:bg-[#FFFBF4] rounded-xl p-4 relative h-full min-h-[120px]">
             <div>
                 <div className="flex items-center justify-between mb-2">
-                    <div className="font-bold text-gray-900">Room Only</div>
-                    <div onClick={handlePolicyClick} className="text-[11px] text-gray-500 underline cursor-pointer">Inclusions & Policies</div>
+                    <div className=" text-[18px] font-[600] text-gray-900">Room Only</div>
+                    <div onClick={handlePolicyClick} className="text-[12px] font-[400] text-[#4A5565] underline cursor-pointer">Inclusions & Policies</div>
                 </div>
                 <div>
                     <div className="flex items-baseline gap-2">
@@ -241,7 +241,7 @@ useEffect(() => {
             </div>
             <button 
                 onClick={(e) => handleBookNowClick(e, room)}
-                className="w-full bg-black text-white text-[11px] font-bold uppercase py-3 rounded-lg mt-3 hover:bg-gray-800 transition-colors tracking-wide"
+                className="w-full bg-black text-white text-[12px] font-[600] uppercase py-3 rounded-lg mt-3 hover:bg-gray-800 transition-colors tracking-wide"
             >
                 BOOK NOW
             </button>

@@ -18,6 +18,7 @@ import MyBookingsPage from "./pages/MyBookingsPage";
 import HolidayPackages from "./pages/HolidayPackages/pages/HolidayPackages";
 import PackageDetailsPage from "./pages/HolidayPackages/pages/PackageDetailsPage";
 import PackageBookingPage from "./pages/HolidayPackages/pages/PackageBookingPage";
+import WriteBrandReview from "./components/ui/WriteBrandReview";
 
 // --- AUTH OBSERVER COMPONENT ---
 // --- AUTH OBSERVER COMPONENT (FIXED) ---
@@ -86,6 +87,7 @@ const App: React.FC = () => {
             </>
           }
         />
+        <Route path="/write-review" element={<WriteBrandReview/>}/>
         <Route path="/room-booking/:hotelId" element={<RoomBookingPage />} />
         <Route path="/booking" element={<BookingPage />} />
         <Route path="/hotellists" element={<HotelListingPage />} />
