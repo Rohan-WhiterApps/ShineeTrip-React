@@ -1,5 +1,5 @@
 "use client";
-
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import {
   ChevronLeft,
@@ -38,6 +38,15 @@ export function RoomDetailsModal({
 }: RoomDetailsModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  // 3. Initialize states from searchParams (place these near your other states)
+  const [checkIn, setCheckIn] = useState(searchParams.get("checkIn") || "");
+  const [checkOut, setCheckOut] = useState(searchParams.get("checkOut") || "");
+  const [adults, setAdults] = useState(parseInt(searchParams.get("adults") || "1"));
+  const [children, setChildren] = useState(parseInt(searchParams.get("children") || "0"));
+  const [loading, setLoading] = useState(false);
   // ✅ State for Dynamic Amenities
   const [dynamicAmenities, setDynamicAmenities] = useState<string[]>([]);
 
@@ -49,7 +58,7 @@ export function RoomDetailsModal({
   );
 
   const thumbnailContainerRef = useRef<HTMLDivElement | null>(null);
-const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
 
   // 🟢 Extract Data Dynamically
@@ -68,54 +77,52 @@ const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const price = roomData?.price?.retail_price || roomData?.rate;
   // Property ID for fetching amenities
 
-  const [searchParams] = useSearchParams();
-
   const propertyId = searchParams.get("propertyId");
   // 🔄 FETCH DYNAMIC AMENITIES
   useEffect(() => {
-  if (!isOpen || !propertyId) return;
+    if (!isOpen || !propertyId) return;
 
-  console.log("🔥 Amenities effect triggered", { isOpen, propertyId });
+    console.log("🔥 Amenities effect triggered", { isOpen, propertyId });
 
-  const fetchAmenities = async () => {
-    try {
-      const token = sessionStorage.getItem("shineetrip_token");
+    const fetchAmenities = async () => {
+      try {
+        const token = sessionStorage.getItem("shineetrip_token");
 
-      const res = await fetch(
-        `http://46.62.160.188:3000/properties/${propertyId}`,
-        {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        }
-      );
+        const res = await fetch(
+          `http://46.62.160.188:3000/properties/${propertyId}`,
+          {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          }
+        );
 
-      if (!res.ok) return;
+        if (!res.ok) return;
 
-      const response = await res.json();
-      console.log("🔹 Full amenities API response:", response);
+        const response = await res.json();
+        console.log("🔹 Full amenities API response:", response);
 
-      const features =
-        response?.data?.selectedFeatures ||
-        response?.selectedFeatures ||
-        [];
+        const features =
+          response?.data?.selectedFeatures ||
+          response?.selectedFeatures ||
+          [];
 
-      const amenitiesList = features
-        .map((feature: any) => feature?.name)
-        .filter(Boolean);
+        const amenitiesList = features
+          .map((feature: any) => feature?.name)
+          .filter(Boolean);
 
-      console.log("✅ Final amenities list:", amenitiesList);
+        console.log("✅ Final amenities list:", amenitiesList);
 
-      setDynamicAmenities(
-        amenitiesList.length > 0
-          ? amenitiesList
-          : ["Air Conditioning", "WiFi", "TV"]
-      );
-    } catch (error) {
-      console.error("Amenities fetch error:", error);
-    }
-  };
+        setDynamicAmenities(
+          amenitiesList.length > 0
+            ? amenitiesList
+            : ["Air Conditioning", "WiFi", "TV"]
+        );
+      } catch (error) {
+        console.error("Amenities fetch error:", error);
+      }
+    };
 
-  fetchAmenities();
-}, [isOpen, propertyId]);
+    fetchAmenities();
+  }, [isOpen, propertyId]);
 
 
 
@@ -177,17 +184,77 @@ const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
   };
 
   useEffect(() => {
-  const activeThumbnail = thumbnailRefs.current[currentImageIndex];
+    const activeThumbnail = thumbnailRefs.current[currentImageIndex];
 
-  if (activeThumbnail) {
-    activeThumbnail.scrollIntoView({
-      behavior: "smooth",
-      inline: "center",
-      block: "nearest",
-    });
+    if (activeThumbnail) {
+      activeThumbnail.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
+    }
+  }, [currentImageIndex]);
+
+
+
+ const handleCheckAvailability = async () => {
+  if (adults + children > 3) {
+    alert("Maximum of 3 guests allowed across adults and children.");
+    return;
   }
-}, [currentImageIndex]);
 
+  setLoading(true);
+  try {
+    const payload = {
+      propertyId: Number(propertyId),
+      roomTypeId: Number(roomData?.id),
+      adults: adults,
+      children: children,
+      checkIn: checkIn,
+      checkOut: checkOut,
+    };
+
+    const res = await fetch("http://46.62.160.188:3000/order/check-availability", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sessionStorage.getItem("shineetrip_token")}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const responseData = await res.json();
+    console.log(responseData); 
+
+    if (res.ok) {
+      const queryParams = new URLSearchParams({
+        location: searchParams.get("location") || "",
+        checkIn: checkIn,
+        checkOut: checkOut,
+        adults: adults.toString(),
+        children: children.toString(),
+        rooms: "1",
+        propertyId: propertyId || "",
+        roomId: roomData?.id?.toString() || "",
+        roomName: roomData?.room_type || roomName,
+        retailPrice: responseData?.pricePerNight || "0", // Data from API response
+        taxPrice: responseData?.taxPrice || "0",       // Data from API response
+      });
+
+      // Navigate to the booking route with the response data passed in state
+    navigate(`/booking?${queryParams.toString()}`, { 
+     state: { availabilityResponse: responseData } 
+     });
+      
+    } else {
+      alert(responseData.message || "Availability check failed");
+    }
+  } catch (error) {
+    console.error("API Error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ✅ Render Stars Logic
   const renderStars = (ratingValue: number) => {
@@ -259,9 +326,9 @@ const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
           </div>
 
           <div className="flex  items-center gap-3">
-            
+
             <button
-              
+
               className="p-2 border rounded-lg transition-colors flex justify-center gap-2 items-center"
             >
               <Flag className="w-5 h-5 " />
@@ -300,43 +367,42 @@ const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
               )}
             </div>
             {safeRoomImages.length > 1 && (
-  <div
-    ref={thumbnailContainerRef}
-    className="mt-4 flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
-  >
-    {safeRoomImages.map((img: string, index: number) => (
-      <button
-        key={index}
-        ref={(el) => {
-          thumbnailRefs.current[index] = el;
-        }}
-        onClick={() => setCurrentImageIndex(index)}
-        className={`flex-shrink-0 rounded-md overflow-hidden border-2 transition-all ${
-          currentImageIndex === index
-            ? "border-blue-500"
-            : "border-transparent hover:border-gray-300"
-        }`}
-      >
-        <img
-          src={img}
-          alt={`Thumbnail ${index + 1}`}
-          className="w-54 h-46 object-cover"
-        />
-      </button>
-    ))}
-  </div>
-)}
+              <div
+                ref={thumbnailContainerRef}
+                className="mt-4 flex gap-3 overflow-x-auto pb-2 scrollbar-hide"
+              >
+                {safeRoomImages.map((img: string, index: number) => (
+                  <button
+                    key={index}
+                    ref={(el) => {
+                      thumbnailRefs.current[index] = el;
+                    }}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`flex-shrink-0 rounded-md overflow-hidden border-2 transition-all ${currentImageIndex === index
+                        ? "border-blue-500"
+                        : "border-transparent hover:border-gray-300"
+                      }`}
+                  >
+                    <img
+                      src={img}
+                      alt={`Thumbnail ${index + 1}`}
+                      className="w-50 h-42 object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
 
           </div>
           <div className="flex flex-col gap-3 w-full">
             {/* ✅ SHORT DESCRIPTION */}
-{short_desc && (
-  <div className="bg-white p-6 w-[95%] mx-auto">
-    <p className="text-gray-700 text-[15px] leading-relaxed">
-      {short_desc}
-    </p>
-  </div>
-)}
+            {short_desc && (
+              <div className="bg-white p-6 w-[95%] mx-auto">
+                <p className="text-gray-700 text-[15px] leading-relaxed">
+                  {short_desc}
+                </p>
+              </div>
+            )}
 
             {/* Rating Card */}
             <div className=" rounded-xl border bg-[#F6F6F6] border-gray-200 p-6  w-[95%] mx-auto">
@@ -371,18 +437,18 @@ const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
               {/* Left: Highlights  */}
 
               {/* Left: Long Description */}
-<div className="lg:col-span-2 space-y-6">
-  <div className="bg-white p-6">
-    <h3 className="text-lg font-semibold text-gray-900 mb-3">
-      About this room
-    </h3>
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-white p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                    About this room
+                  </h3>
 
-    <div
-      className="text-gray-700 leading-relaxed text-sm md:text-base prose prose-sm max-w-none"
-      dangerouslySetInnerHTML={{ __html: description || "" }}
-    />
-  </div>
-</div>
+                  <div
+                    className="text-gray-700 leading-relaxed text-sm md:text-base prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: description || "" }}
+                  />
+                </div>
+              </div>
 
 
               {/* ---------- Right: Check Availability ---------- */}
@@ -391,90 +457,83 @@ const thumbnailRefs = useRef<(HTMLButtonElement | null)[]>([]);
                   Add dates for Prices
                 </h3>
 
+                {/* Replace the Dates & Guests section with this */}
                 <div className="space-y-3">
-                  {/* Location */}
-                  <div className="relative">
-                    <Landmark className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D2A256]" />
-                    <input
-                      type="text"
-                      placeholder="Goa"
-                      className="
-          w-full border border-gray-300 rounded-lg
-          pl-10 pr-4 py-3 text-sm
-          focus:outline-none focus:ring-1 focus:ring-gray-500
-        "
-                    />
+                  <input
+                    type="date"
+                    value={checkIn}
+                    onChange={(e) => setCheckIn(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-3 text-sm"
+                  />
+                  <input
+                    type="date"
+                    value={checkOut}
+                    onChange={(e) => setCheckOut(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-3 text-sm"
+                  />
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <select
+                      value={adults}
+                      onChange={(e) => setAdults(Number(e.target.value))}
+                      className="border border-gray-300 rounded-lg p-2 text-sm"
+                    >
+                      {[1, 2, 3].map(n => <option key={n} value={n}>{n} Adult{n > 1 ? 's' : ''}</option>)}
+                    </select>
+                    <select
+                      value={children}
+                      onChange={(e) => setChildren(Number(e.target.value))}
+                      className="border border-gray-300 rounded-lg p-2 text-sm"
+                    >
+                      {[0, 1, 2].map(n => <option key={n} value={n}>{n} Child{n !== 1 ? 'ren' : ''}</option>)}
+                    </select>
                   </div>
 
-                  {/* Dates */}
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D2A256]" />
-                    <input
-                      type="text"
-                      placeholder="Check Dates"
-                      className="
-          w-full border border-gray-300 rounded-lg
-          pl-10 pr-4 py-3 text-sm
-          focus:outline-none focus:ring-1 focus:ring-gray-500
-        "
-                    />
-                  </div>
-
-                  {/* Guests */}
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D2A256]" />
-                    <input
-                      type="text"
-                      placeholder="Guests"
-                      className="
-          w-full border border-gray-300 rounded-lg
-          pl-10 pr-4 py-3 text-sm
-          focus:outline-none focus:ring-1 focus:ring-gray-500
-        "
-                    />
-                  </div>
-
-                  {/* Button */}
-                  <button className="w-full bg-[#D2A256] hover:bg-[#c6964f] text-white font-semibold py-3 rounded-lg transition">
-                    Check Availability
+                  {/* Button triggers the logic */}
+                  <button
+                    onClick={handleCheckAvailability}
+                    disabled={loading || (adults + children > 3)}
+                    className="w-full bg-[#D2A256] text-white font-semibold py-3 rounded-lg transition disabled:bg-gray-400"
+                  >
+                    {loading ? "Confirming..." : "Book your Destination"}
                   </button>
                 </div>
               </div>
             </div>
 
-            
-            
+
+
 
             {/* ✅ DYNAMIC AMENITIES RENDER */}
             <div className="bg-white p-6 mb-12">
-  {dynamicAmenities.length > 0 && (
-    <div
-      className="
+              {dynamicAmenities.length > 0 && (
+                <div
+                  className="
         grid gap-4
         [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]
       "
-    >
-      {dynamicAmenities.map((amenity, index) => (
-        <div
-          key={index}
-          className="
+                >
+                  {dynamicAmenities.map((amenity, index) => (
+                    <div
+                      key={index}
+                      className="
             border border-gray-200 rounded-lg
             px-4 py-3 bg-white
             text-sm text-gray-700
             flex items-center justify-center
             hover:shadow-sm transition
           "
-        >
-          {amenity}
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-
+                    >
+                      {amenity}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+
           </div>
-        
+        </div>
+
       </DialogContent>
     </Dialog>
   );

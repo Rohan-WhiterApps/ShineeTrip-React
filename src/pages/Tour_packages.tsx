@@ -113,11 +113,10 @@ const Tourspackages = () => {
             {sortOptions.map((option, idx) => (
               <button
                 key={idx}
-                className={`px-4 py-2 rounded-full whitespace-nowrap ${
-                  idx === 0
+                className={`px-4 py-2 rounded-full whitespace-nowrap ${idx === 0
                     ? 'bg-gray-800 text-white'
                     : 'bg-white border border-gray-300'
-                }`}
+                  }`}
               >
                 {option}
               </button>
