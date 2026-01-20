@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+
+    environment {
+        // IMPORTANT: Update this to your remote server details
+        REMOTE_HOST = 'root@157.180.43.19' 
+        REMOTE_DEPLOY_DIR = '/opt/shinee-trip-react-web'
+        // Jenkins credential ID configured with the SSH Private Key for the remote host
+        SSH_CREDENTIAL_ID = 'remote-ssh-key-id' // *** Update this ID in Jenkins Credentials ***
+
+        // Define SSH options once for clean usage
+        SSH_OPTS = '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' 
+    }
+
+    stages {
+        stage('Checkout Flutter Frontend Code') {
+            steps {
+                // !!! IMPORTANT: Replace this URL with your actual Flutter frontend repository !!!
+                git branch: 'master', url: 'https://github.com/Rohan-WhiterApps/ShineeTrip-React.git', credentialsId: 'github_cred'
+            }
+        }
+
+        stage('Deploy via SSH and Build Remotely') {
+            agent any
+            
+            steps {
+                sshagent(credentials: [env.SSH_CREDENTIAL_ID]) {
+                    sh """
+                    
+                    echo '1. Preparing remote deployment directory...'
+                    # The SSH options must follow the 'ssh' command directly.
+                    ssh \$SSH_OPTS \$REMOTE_HOST "mkdir -p \$REMOTE_DEPLOY_DIR"
+
+                    echo '2. Copying files to remote server via rsync...'
+                    # For rsync, the SSH options must be passed using the '-e' or '--rsh' flag.
+                    rsync -avz --exclude='.git' --exclude='node_modules' --delete \\
+                        -e "ssh \$SSH_OPTS" \\
+                        ./ \$REMOTE_HOST:\$REMOTE_DEPLOY_DIR
+
+                    echo '3. Running Docker Compose remotely...'
+                    # The options go on the main 'ssh' command. Remote commands are chained with '&&'.
+                    ssh \$SSH_OPTS \$REMOTE_HOST "\
+                        cd \$REMOTE_DEPLOY_DIR && \
+                        echo 'Starting remote build/deploy...' && \
+                        docker-compose down || true && \
+                        docker-compose up -d --build && \
+                        echo 'Remote deployment complete!' \
+                    "
+                    
+                    echo 'Deployment successful. Flutter web application is now running on the remote host.'
+                    """
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  frontend:
+    # Use the Dockerfile in the current directory (where docker-compose.yml is)
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Name the container for easier management
+    container_name: react-vite-frontend
+    # Map the container port (5173) to the host port (5173)
+    ports:
+      - "5174:5174"
+    # Mount volumes to enable file synchronization (Hot Reloading/HMR)
+    volumes:
+      # Mount the current host directory to /app in the container
+      - .:/app
+      # Explicitly keep node_modules inside the container for faster builds
+      - /app/node_modules
+    # Restart the container if it stops unexpectedly
+    restart: always
