@@ -11,13 +11,10 @@ interface CustomerData {
     email: string;
     phone: string;
     dob: string; // Date of Birth (from Swagger)
-    address?: string; 
+    address?: string;
     profile_image?: string;
-
     work_title?: string;
     language?: string;
-
-
     carts: any[]; // Cart details
     orders: Order[]; // Order details for bookings
 }
@@ -34,7 +31,7 @@ interface OrderRoom {
     id: number;
     checkIn: string;
     checkOut: string;
-    adults: number; 
+    adults: number;
     children: number;
     property: {
         name: string;
@@ -43,19 +40,16 @@ interface OrderRoom {
     };
 }
 
-
-
 // ------------------------------------------------
 // Helper: Date Format
 // ------------------------------------------------
 const formatDateForInput = (dateString?: string): string => {
     if (!dateString || dateString === 'N/A') return '';
     try {
-        // Assume DOB is YYYY-MM-DD or convertible to it (e.g., "1995-05-10T...")
-        // We ensure it gets normalized to YYYY-MM-DD for the input[type=date]
         const date = new Date(dateString);
-        if (isNaN(date.getTime())) return dateString; 
-        
+        if (isNaN(date.getTime())) return '';
+
+        // Extracting components directly to avoid UTC timezone shifts
         const yyyy = date.getFullYear();
         const mm = String(date.getMonth() + 1).padStart(2, '0');
         const dd = String(date.getDate()).padStart(2, '0');
@@ -72,7 +66,7 @@ const formatDisplayDate = (dateString?: string): string => {
         const parts = dateString.split('-');
         if (parts.length === 3) {
             // Converts YYYY-MM-DD to DD-MM-YYYY (Example display format)
-            return `${parts[2]}-${parts[1]}-${parts[0]}`; 
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
         }
         return dateString;
     } catch {
@@ -85,150 +79,152 @@ const CustomerProfilePage: React.FC = () => {
     const [customer, setCustomer] = useState<CustomerData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [isEditMode, setIsEditMode] = useState(false); 
+    const [isEditMode, setIsEditMode] = useState(false);
     const [formState, setFormState] = useState<Partial<CustomerData & { profile_image?: string }>>({});
     const [myBookings, setMyBookings] = useState<any[]>([]);
-    
+
     const customerDbId = sessionStorage.getItem('shineetrip_db_customer_id');
     const token = sessionStorage.getItem('shineetrip_token');
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
-const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
 
-const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
-  setSelectedImage(file);
-  setImagePreview(URL.createObjectURL(file));
-};
+        setSelectedImage(file);
+        setImagePreview(URL.createObjectURL(file));
+    };
 
 
-    
+
     // ------------------------------------------------
     // 1. GET By ID Logic: Fetch Customer Data and Orders
     // ------------------------------------------------
     const fetchProfileData = useCallback(async () => {
-    if (!customerDbId || !token) {
-        setError("Authorization required. Please log in.");
-        setLoading(false);
-        return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-        // 1. Fetch Basic Profile Data (Swagger: GET /customers/{id})
-        const apiUrl = `http://46.62.160.188:3000/customers/${customerDbId}`;
-        const response = await fetch(apiUrl, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
-            },
-        });
-
-        if (!response.ok) {
-            if (response.status === 401 || response.status === 403) {
-                handleLogout();
-            }
-            throw new Error("Failed to fetch profile. Session expired or access denied.");
+        if (!customerDbId || !token) {
+            setError("Authorization required. Please log in.");
+            setLoading(false);
+            return;
         }
 
-        const profileData: CustomerData = await response.json();
-        
-        // 2. FETCH DETAILED ORDERS (Swagger: GET /order/search)
-        // Ye bohot zaroori hai kyunki /customers/id wali API 'orderRooms' nahi bhejti
-        let detailedOrders = [];
+        setLoading(true);
+        setError(null);
+
         try {
-            const ordersRes = await fetch(`http://46.62.160.188:3000/order/search?customerId=${customerDbId}`, {
+            // 1. Fetch Basic Profile Data (Swagger: GET /customers/{id})
+            const apiUrl = `http://46.62.160.188:3000/customers/${customerDbId}`;
+            const response = await fetch(apiUrl, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`,
                 },
             });
-            if (ordersRes.ok) {
-                detailedOrders = await ordersRes.json();
-                console.log("Detailed Orders Fetched:", detailedOrders); // Debugging ke liye
+
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    handleLogout();
+                }
+                throw new Error("Failed to fetch profile. Session expired or access denied.");
             }
-        } catch (orderErr) {
-            console.error("Detailed orders fetch failed", orderErr);
+
+            const profileData: CustomerData = await response.json();
+
+            // 2. FETCH DETAILED ORDERS (Swagger: GET /order/search)
+            // Ye bohot zaroori hai kyunki /customers/id wali API 'orderRooms' nahi bhejti
+            let detailedOrders = [];
+            try {
+                const ordersRes = await fetch(`http://46.62.160.188:3000/order/search?customerId=${customerDbId}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
+                });
+                if (ordersRes.ok) {
+                    detailedOrders = await ordersRes.json();
+                    console.log("Detailed Orders Fetched:", detailedOrders); // Debugging ke liye
+                }
+            } catch (orderErr) {
+                console.error("Detailed orders fetch failed", orderErr);
+            }
+
+            // 3. Data ko Merge aur Normalize karein
+            const normalizedData: CustomerData = {
+                ...profileData,
+                orders: detailedOrders.length > 0 ? detailedOrders : (profileData.orders || []),
+                dob: profileData.dob || 'N/A',
+                work_title: profileData.work_title || "Travel Enthusiast",
+                language: profileData.language || "Hindi, English",
+            };
+
+            // Final States Set karein
+            setCustomer(normalizedData);
+            setFormState({
+                first_name: normalizedData.first_name || '',
+                last_name: normalizedData.last_name || '',
+                email: normalizedData.email || '',
+                phone: normalizedData.phone || '',
+                // 🟢 FIX: Pre-format the date so the input[type=date] can read it
+                dob: formatDateForInput(normalizedData.dob),
+                address: normalizedData.address || '',
+                work_title: normalizedData.work_title || '',
+                language: normalizedData.language || '',
+            });
+
+        } catch (err) {
+            console.error("Profile fetch error:", err);
+            setError(err instanceof Error ? err.message : 'Failed to load user profile.');
+        } finally {
+            setLoading(false);
         }
-
-        // 3. Data ko Merge aur Normalize karein
-        const normalizedData: CustomerData = {
-            ...profileData,
-            orders: detailedOrders.length > 0 ? detailedOrders : (profileData.orders || []), 
-            dob: profileData.dob || 'N/A', 
-            work_title: profileData.work_title || "Travel Enthusiast",
-            language: profileData.language || "Hindi, English",
-        };
-        
-        // Final States Set karein
-        setCustomer(normalizedData);
-        setFormState({
-            first_name: normalizedData.first_name || '',
-            last_name: normalizedData.last_name || '',
-            email: normalizedData.email || '',
-            phone: normalizedData.phone || '',
-            dob: normalizedData.dob, 
-            address: normalizedData.address || '',
-            work_title: normalizedData.work_title || '',
-            language: normalizedData.language || '',
-        });
-
-    } catch (err) {
-        console.error("Profile fetch error:", err);
-        setError(err instanceof Error ? err.message : 'Failed to load user profile.');
-    } finally {
-        setLoading(false);
-    }
-}, [customerDbId, token, navigate]); 
+    }, [customerDbId, token, navigate]);
 
     useEffect(() => {
         fetchProfileData();
     }, [fetchProfileData]);
-    
+
     // ------------------------------------------------
     // 2. PATCH Logic: Update Customer Data
     // ------------------------------------------------
 
-        const generateLetterAvatar = (name: string) =>
-  `https://ui-avatars.com/api/?name=${name.charAt(0).toUpperCase()}&size=256&background=0D8ABC&color=fff`;
+    const generateLetterAvatar = (name: string) =>
+        `https://ui-avatars.com/api/?name=${name.charAt(0).toUpperCase()}&size=256&background=0D8ABC&color=fff`;
 
     const finalImageUrl =
-  imagePreview ||
-  customer?.profile_image ||
-  generateLetterAvatar(customer?.first_name || "U");
+        imagePreview ||
+        customer?.profile_image ||
+        generateLetterAvatar(customer?.first_name || "U");
     const handleSaveProfile = async () => {
         if (!customerDbId || !token || !customer) return;
-        
+
         setLoading(true);
         setError(null);
-        
+
         try {
             // Endpoint: PATCH /customers/{id}
             const apiUrl = `http://46.62.160.188:3000/customers/${customerDbId}`;
-            
+
             // 💡 FIX 1: Sirf woh fields bhejo jo Swagger PATCH schema mein allowed hain.
             // DOB ko same format mein bhejna zaroori hai jo backend accept karta hai.
+            // Inside handleSaveProfile...
             const payload: Partial<CustomerData> = {
                 first_name: formState.first_name,
                 last_name: formState.last_name,
-                email: formState.email, 
+                email: formState.email,
                 phone: formState.phone,
-                dob: formState.dob, // Send the date as it is in state (YYYY-MM-DD from input)
-               
+                // Fix: Convert YYYY-MM-DD to ISO 8601
+                dob: formState.dob && formState.dob !== 'N/A'
+                    ? new Date(formState.dob).toISOString()
+                    : undefined,
                 address: formState.address,
-              profile_image:
-    customer?.profile_image ||
-    generateLetterAvatar(formState.first_name || "U"),
+                profile_image: customer?.profile_image || generateLetterAvatar(formState.first_name || "U"),
             };
-            
+
             const response = await fetch(apiUrl, {
-                method: "PATCH", 
+                method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`,
@@ -241,7 +237,7 @@ const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
                 throw new Error(errorBody.message || "Failed to update profile.");
             }
 
-            await fetchProfileData(); 
+            await fetchProfileData();
             setIsEditMode(false);
             alert("Profile updated successfully!");
 
@@ -254,12 +250,12 @@ const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 
 
 
-    
+
 
     // --- Utility Handlers ---
     const handleLogout = () => {
-        sessionStorage.clear(); 
-        navigate('/'); 
+        sessionStorage.clear();
+        navigate('/');
     };
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -302,9 +298,9 @@ const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
         );
     }
-    
+
     const fullName = `${customer.first_name} ${customer.last_name}`;
-    
+
     // 💡 FIX 2: Dynamic Booking Data Extraction
     const activeBookings = customer.orders
         ?.flatMap(order => order.orderRooms || [])
@@ -315,103 +311,101 @@ const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
             count: (room.adults || 0) + (room.children || 0), // Combining adults and children as count
             image_url: room.property.images?.[0]?.image || "https://placehold.co/180x100/A0A0A0/444444?text=Trip+Image"
         })) || [];
-const ProfileNavItem: React.FC<{ icon: React.ElementType, label: string, active?: boolean, onClick: () => void }> = ({ icon: Icon, label, active = false, onClick }) => (
-    <button onClick={onClick} className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
-        active ? 'bg-[#D2A256] text-white shadow-md' : 'text-gray-700 hover:bg-gray-100'
-    }`}>
-        <Icon className="w-5 h-5" />
-        <span className="font-medium text-sm">{label}</span>
-    </button>
-);
+    const ProfileNavItem: React.FC<{ icon: React.ElementType, label: string, active?: boolean, onClick: () => void }> = ({ icon: Icon, label, active = false, onClick }) => (
+        <button onClick={onClick} className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${active ? 'bg-[#D2A256] text-white shadow-md' : 'text-gray-700 hover:bg-gray-100'
+            }`}>
+            <Icon className="w-5 h-5" />
+            <span className="font-medium text-sm">{label}</span>
+        </button>
+    );
 
     // --- Profile Display ---
     return (
         <div className="min-h-screen bg-gray-50 font-opensans pt-24 pb-12">
             <div className="max-w-7xl mt-16 mx-auto px-6 grid grid-cols-1 lg:grid-cols-4 gap-8">
-                
+
                 {/* Column 1: Sidebar (Design Maintained) */}
                 <div className="lg:col-span-1 space-y-6">
                     <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
                         <h3 className="text-xl font-extrabold text-gray-900 mb-4 border-b pb-2">Profile</h3>
-                        
+
                         <div className="space-y-1">
-                            <ProfileNavItem icon={User} label="About me" active={true} onClick={() => navigate('/profile')}/>
-                            <ProfileNavItem icon={ShoppingBag} label="My booking" active={false} onClick={() => navigate('/mybooking')}/>
+                            <ProfileNavItem icon={User} label="About me" active={true} onClick={() => navigate('/profile')} />
+                            <ProfileNavItem icon={ShoppingBag} label="My booking" active={false} onClick={() => navigate('/mybooking')} />
                         </div>
                     </div>
-                    
+
                     {/* Logout Button in sidebar style */}
                     <button onClick={handleLogout} className="w-full bg-red-600 text-white px-4 py-3 rounded-xl font-semibold hover:bg-red-700 transition-colors flex items-center justify-center shadow-md">
                         <LogOut className="w-5 h-5 inline mr-2" /> Log Out
                     </button>
                 </div>
-                
+
                 {/* Column 2: Main Content */}
                 <div className="lg:col-span-3 space-y-8">
-                    
+
                     {/* 1. About Me Header & Details */}
                     <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
                         <div className="flex justify-between items-center mb-6 border-b pb-4">
                             <div className="flex items-center gap-4">
-  <img
-    src={
-      customer.profile_image ||
-      generateLetterAvatar(customer.first_name || "U")
-    }
-    alt="Profile"
-    className="w-14 h-14 rounded-full object-cover border"
-  />
+                                <img
+                                    src={
+                                        customer.profile_image ||
+                                        generateLetterAvatar(customer.first_name || "U")
+                                    }
+                                    alt="Profile"
+                                    className="w-14 h-14 rounded-full object-cover border"
+                                />
 
-  <div>
-    <h2 className="text-2xl font-extrabold text-gray-900">About me</h2>
-    <p className="text-sm text-gray-500">{fullName}</p>
-  </div>
-</div>
+                                <div>
+                                    <h2 className="text-2xl font-extrabold text-gray-900">About me</h2>
+                                    <p className="text-sm text-gray-500">{fullName}</p>
+                                </div>
+                            </div>
 
-                            <button 
-                                onClick={toggleEditMode} 
-                                className={`text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-md flex items-center ${
-                                    isEditMode ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-800 hover:bg-black'
-                                }`}
+                            <button
+                                onClick={toggleEditMode}
+                                className={`text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors shadow-md flex items-center ${isEditMode ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-800 hover:bg-black'
+                                    }`}
                             >
                                 {isEditMode ? (<><X className="w-4 h-4 inline mr-1" /> Cancel</>) : (<><Edit3 className="w-4 h-4 inline mr-1" /> Edit</>)}
                             </button>
                         </div>
-                        
-                        <div className="flex items-start gap-6"> 
-                            
+
+                        <div className="flex items-start gap-6">
+
                             {/* Personal Details Grid (Dynamic/Editable) */}
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-4 gap-x-8 grow">
-                                
+
                                 {isEditMode ? (
                                     <>
                                         <ProfileEditField label="First Name" name="first_name" value={formState.first_name || ''} onChange={handleFormChange} />
                                         <ProfileEditField label="Last Name" name="last_name" value={formState.last_name || ''} onChange={handleFormChange} />
                                         <ProfileEditField label="Work Title" name="work_title" value={formState.work_title || ''} onChange={handleFormChange} />
-                                        <ProfileEditField 
-                                            label="Birthdate (YYYY-MM-DD)" 
-                                            name="dob" // Changed name to 'dob' based on Swagger
-                                            value={formatDateForInput(formState.dob)} 
-                                            onChange={handleFormChange} 
-                                            type="date"
-                                        />
+                                       <ProfileEditField 
+    label="Birthdate" 
+    name="dob" 
+    value={formState.dob || ''} // Removed formatDateForInput call from here
+    onChange={handleFormChange} 
+    type="date"
+/>
                                         <ProfileEditField label="Language" name="language" value={formState.language || ''} onChange={handleFormChange} />
                                         <div className="flex items-center gap-4 col-span-full">
-                              <img
-    src={imagePreview || customer?.profile_image || "https://ui-avatars.com/api/?name=U"}
-    className="w-24 h-24 rounded-full object-cover border"
-  />
+                                            <img
+                                                src={imagePreview || customer?.profile_image || "https://ui-avatars.com/api/?name=U"}
+                                                className="w-24 h-24 rounded-full object-cover border"
+                                            />
 
-  <label className="cursor-pointer bg-gray-800 text-white px-4 py-2 rounded-lg text-sm">
-    Change Photo
-    <input
-      type="file"
-      accept="image/*"
-      hidden
-      onChange={handleImageSelect}
-    />
-  </label>
-</div>
+                                            <label className="cursor-pointer bg-gray-800 text-white px-4 py-2 rounded-lg text-sm">
+                                                Change Photo
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    hidden
+                                                    onChange={handleImageSelect}
+                                                />
+                                            </label>
+                                        </div>
 
                                     </>
                                 ) : (
@@ -423,14 +417,14 @@ const ProfileNavItem: React.FC<{ icon: React.ElementType, label: string, active?
                                 )}
                             </div>
                         </div>
-                        
+
                         {/* Save Button for Edit Mode */}
                         {isEditMode && (
                             <div className="mt-6 text-right border-t pt-4">
                                 <button
                                     onClick={handleSaveProfile}
                                     className="bg-[#D2A256] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#c2934b] transition-colors"
-                                    disabled={loading} 
+                                    disabled={loading}
                                 >
                                     {loading ? <Loader2 className="w-5 h-5 animate-spin inline mr-1" /> : <Edit3 className="w-4 h-4 inline mr-1" />}
                                     {loading ? 'Saving...' : 'Save Changes'}
@@ -446,43 +440,43 @@ const ProfileNavItem: React.FC<{ icon: React.ElementType, label: string, active?
                             {/* NOTE: Address field is optional in Swagger, keeping it in helper for display */}
                             <ProfileDataField icon={MapPin} label="Address" value={customer.address || "Not provided"} color="#6B7280" />
                         </div>
-                        
+
                     </div>
-                    
-                   {/* 2. My Bookings Section */}
-{/* 2. My Bookings Section - Updated for Grid and Navigation */}
-<div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-    <h2 className="text-xl font-extrabold text-gray-900 mb-6">My Bookings</h2>
-    
-    {/* 🟢 CHANGE 1: Overflow scroll ko hata kar Grid lagaya (Max 3 per row) */}
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {customer && customer.orders && customer.orders.length > 0 ? (
-            customer.orders.map((order: any) => {
-                const rooms = order.orderRooms || [];
-                
-                if (rooms.length > 0) {
-                    return rooms.map((room: any) => (
-                        <BookingCard 
-                            key={`${order.id}-${room.id}`}
-                            destination={`${room.property?.city || 'India'}`}
-                            count={1} 
-                            image_url={room.property?.images?.[0]?.image || "https://placehold.co/180x110?text=Hotel"}
-                            onClick={() => navigate(`/mybooking?highlight=${order.id}`)}
-                        />
-                    ));
-                }
-                return null;
-            })
-        ) : (
-            <div className="col-span-full text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                <ShoppingBag className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-                <p className="text-gray-500 font-medium">No bookings found yet</p>
-            </div>
-        )}
-    </div>
-</div>                    
+
+                    {/* 2. My Bookings Section */}
+                    {/* 2. My Bookings Section - Updated for Grid and Navigation */}
+                    <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+                        <h2 className="text-xl font-extrabold text-gray-900 mb-6">My Bookings</h2>
+
+                        {/* 🟢 CHANGE 1: Overflow scroll ko hata kar Grid lagaya (Max 3 per row) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {customer && customer.orders && customer.orders.length > 0 ? (
+                                customer.orders.map((order: any) => {
+                                    const rooms = order.orderRooms || [];
+
+                                    if (rooms.length > 0) {
+                                        return rooms.map((room: any) => (
+                                            <BookingCard
+                                                key={`${order.id}-${room.id}`}
+                                                destination={`${room.property?.city || 'India'}`}
+                                                count={1}
+                                                image_url={room.property?.images?.[0]?.image || "https://placehold.co/180x110?text=Hotel"}
+                                                onClick={() => navigate(`/mybooking?highlight=${order.id}`)}
+                                            />
+                                        ));
+                                    }
+                                    return null;
+                                })
+                            ) : (
+                                <div className="col-span-full text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                                    <ShoppingBag className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                                    <p className="text-gray-500 font-medium">No bookings found yet</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
-                
+
             </div>
         </div>
     );
@@ -503,11 +497,10 @@ const ProfileDataField: React.FC<{ icon: React.ElementType, label: string, value
 
 // Reusable Component for Side Navigation Items
 const ProfileNavItem: React.FC<{ icon: React.ElementType, label: string, active?: boolean }> = ({ icon: Icon, label, active = false }) => (
-    <button className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
-        active 
-        ? 'bg-[#D2A256] text-white shadow-md' 
-        : 'text-gray-700 hover:bg-gray-100'
-    }`}>
+    <button className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${active
+            ? 'bg-[#D2A256] text-white shadow-md'
+            : 'text-gray-700 hover:bg-gray-100'
+        }`}>
         <Icon className="w-5 h-5" />
         <span className="font-medium text-sm">{label}</span>
     </button>
@@ -541,14 +534,14 @@ const ProfileEditField: React.FC<{ label: string, name: keyof CustomerData, valu
 
 // Dynamic Booking Card Component
 const BookingCard: React.FC<{ destination: string, count: number, image_url: string, onClick?: () => void }> = ({ destination, count, image_url, onClick }) => (
-    <div 
-        className="w-full bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hover:shadow-xl transition-all cursor-pointer group" 
+    <div
+        className="w-full bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden hover:shadow-xl transition-all cursor-pointer group"
         onClick={onClick}
     >
         <div className="overflow-hidden">
-            <img 
-                src={image_url} 
-                alt={destination} 
+            <img
+                src={image_url}
+                alt={destination}
                 className="h-[150px] w-full object-cover group-hover:scale-110 transition-transform duration-500"
                 onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/300x150?text=Hotel+View" }}
             />
