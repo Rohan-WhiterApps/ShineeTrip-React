@@ -30,3 +30,7 @@ dist-ssr
 # local ssh keys (DO NOT COMMIT)
 .ssh_work_shineetrip
 .ssh_work_shineetrip.pub
+
+# local ssh keys (DO NOT COMMIT)
+.ssh_work_shineetrip
+.ssh_work_shineetrip.pub
