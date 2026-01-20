@@ -51,7 +51,6 @@ const BookingPage: React.FC = () => {
     
 
    
-<<<<<<< HEAD
 const [guestList, setGuestList] = useState<{ title: string; firstName: string; lastName: string  , email: string , phone:string , phoneCode: string }[]>([]);
 
 // 2. Add Guest Button ka Function
@@ -64,13 +63,6 @@ const handleAddGuest = () => {
         phone: '', 
         phoneCode: '+91' 
     }]);
-=======
-const [guestList, setGuestList] = useState<{ title: string; firstName: string; lastName: string }[]>([]);
-
-// 2. Add Guest Button ka Function
-const handleAddGuest = () => {
-    setGuestList([...guestList, { title: '', firstName: '', lastName: '' }]);
->>>>>>> origin/master
 };
 
 // 3. Remove Guest Button ka Function
@@ -83,11 +75,7 @@ const handleRemoveGuest = (index: number) => {
 // 4. Input Change Handler for Guests
 const handleGuestChange = (index: number, field: string, value: string) => {
     const updatedList = [...guestList];
-<<<<<<< HEAD
     // @ts-ignore
-=======
-    // @ts-ignore (TypeScript strictness simple fix)
->>>>>>> origin/master
     updatedList[index][field] = value;
     setGuestList(updatedList);
 };
