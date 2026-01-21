@@ -46,6 +46,7 @@ export function RoomDetailsModal({
   const [checkOut, setCheckOut] = useState(searchParams.get("checkOut") || "");
   const [adults, setAdults] = useState(parseInt(searchParams.get("adults") || "1"));
   const [children, setChildren] = useState(parseInt(searchParams.get("children") || "0"));
+  const [rooms, setRooms] = useState(parseInt(searchParams.get("rooms") || "1"));
   const [loading, setLoading] = useState(false);
   // ✅ State for Dynamic Amenities
   const [dynamicAmenities, setDynamicAmenities] = useState<string[]>([]);
@@ -229,12 +230,13 @@ export function RoomDetailsModal({
         checkOut: checkOut,
         adults: adults.toString(),
         children: children.toString(),
-        rooms: "1",
+        rooms: responseData.roomsRequired || "1" ,  
         propertyId: propertyId || "",
         roomId: roomData?.id?.toString() || "",
         roomName: roomData?.room_type || roomName,
         retailPrice: responseData?.pricePerNight || "0", // Data from API response
-        taxPrice: responseData?.taxPrice || "0",       // Data from API response
+        taxPrice: responseData?.taxTotal || "0",
+        grandTotal: responseData?.grandTotal || "0" // Data from API response
       });
 
       // Navigate to the booking route with the response data passed in state

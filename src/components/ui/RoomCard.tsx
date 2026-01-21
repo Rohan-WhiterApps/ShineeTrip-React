@@ -96,7 +96,7 @@ const RoomCard = ({ room, hotelImages, services, onMoreInfoClick, onBookNowClick
     // Helper function to handle booking click
     const handleBookNowClick = (e: React.MouseEvent, roomData: any) => {
         e.stopPropagation();
-        onBookNowClick(roomData);
+        onMoreInfoClick(roomData);
     }
 
     // Helper function to handle more info click
@@ -239,10 +239,8 @@ const RoomCard = ({ room, hotelImages, services, onMoreInfoClick, onBookNowClick
                            This ensures they flow side-by-side perfectly on desktop.
                         */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                             {/* Option 1: Base Price (Original "Room Only") - ALWAYS FIRST */}
                             <div className="flex flex-col justify-between border hover:border-[#D2A256] hover:bg-[#FFFBF4] rounded-xl p-4 relative h-full min-h-[120px]">
-
                                 {/* Row 1 */}
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="text-[18px] font-bold text-gray-900">

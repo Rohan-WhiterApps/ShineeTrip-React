@@ -87,9 +87,10 @@ const BookingPage: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const propertyId = searchParams.get('propertyId');
-
+    
     const retailPriceStr = searchParams.get('retailPrice') || '0';
     const taxPriceStr = searchParams.get('taxPrice') || '0';
+    const grandTotalStr = searchParams.get('grandTotal') || '0';
     const roomName = searchParams.get('roomName') || 'Deluxe Room';
     const checkInStr = searchParams.get('checkIn') || '';
     const checkOutStr = searchParams.get('checkOut') || '';
@@ -108,12 +109,9 @@ const BookingPage: React.FC = () => {
   }
 })();
 
-const retailPrice = parseFloat(retailPriceStr) * parseFloat(rooms) * nights;
-const taxPrice = parseFloat(taxPriceStr);
-
-// ✅ total
-const finalTotal = retailPrice + taxPrice;
-
+    const retailPrice = parseFloat(retailPriceStr);
+    const taxPrice = parseFloat(taxPriceStr);
+    const grandTotal = parseFloat(grandTotalStr);
 
     const token = sessionStorage.getItem('shineetrip_token');
     const customerIdStr = sessionStorage.getItem('shineetrip_db_customer_id') || '1'; // Using db customer ID
@@ -950,6 +948,8 @@ if (!orderResponse.ok) {
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                                            
                                             {/* Guest Names */}
                                             <input
                                                 type="text"
@@ -1178,13 +1178,13 @@ if (!orderResponse.ok) {
                                     {/* Base Fare */}
                                     <div className="flex justify-between items-center text-sm text-gray-600">
                                         <span>Base fare per adult</span>
-                                        <span className="font-bold text-gray-900">₹{retailPrice.toLocaleString()}</span>
+                                        <span className="font-bold text-gray-900">₹{retailPrice} (x{rooms})</span>
                                     </div>
 
                                     {/* Tax */}
                                     <div className="flex justify-between items-center text-sm text-gray-600">
                                         <span>Tax & Service Fee</span>
-                                        <span className="font-bold text-gray-900">₹{(finalTotal - retailPrice).toFixed(0)}</span>
+                                        <span className="font-bold text-gray-900">₹{taxPrice}</span>
                                     </div>
 
 
@@ -1199,7 +1199,7 @@ if (!orderResponse.ok) {
                                     {/* Total Price */}
                                     <div className="flex justify-between items-center">
                                         <span className="text-lg font-bold text-gray-900">Total Price</span>
-                                        <span className="text-xl font-extrabold text-gray-900">₹{finalTotal.toLocaleString()}</span>
+                                        <span className="text-xl font-extrabold text-gray-900">₹{grandTotal}</span>
                                     </div>
                                 </div>
                             </div>
