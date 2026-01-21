@@ -580,7 +580,7 @@ const MyBookingsPage: React.FC = () => {
                                                         <p className="mt-1 text-gray-900 font-black">
                                                             Amount: {order.currency} {(order.grandTotal || order.totalPrice || 0).toLocaleString()}
                                                         </p>
-                                                    </div>                             <div className="mt-3 text-sm"><p>Room: <span className='font-bold'>{room.roomType?.room_type}</span></p><p className='text-[#D2A256] font-extrabold'>{formatShortDate(room.checkIn)} - {formatShortDate(room.checkOut)}</p></div>
+                                                    </div>                             <div className="mt-3 text-sm"><p>Room: <span className='font-bold'>{room.roomType?.room_type}</span></p></div>
                                                 </div>
                                             </div>
                                             <div className='pt-4 flex gap-3'>
