@@ -198,11 +198,7 @@ export function RoomDetailsModal({
 
 
  const handleCheckAvailability = async () => {
-  if (adults + children > 3) {
-    alert("Maximum of 3 guests allowed across adults and children.");
-    return;
-  }
-
+  
   setLoading(true);
   try {
     const payload = {

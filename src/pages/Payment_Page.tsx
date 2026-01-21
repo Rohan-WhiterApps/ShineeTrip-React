@@ -93,12 +93,25 @@ const BookingPage: React.FC = () => {
     const checkInStr = searchParams.get('checkIn') || '';
     const checkOutStr = searchParams.get('checkOut') || '';
     const roomId = searchParams.get('roomId') || '';
+    const rooms = searchParams.get('rooms') || '1';
 
-    const retailPrice = parseFloat(retailPriceStr);
-    const taxPrice = parseFloat(taxPriceStr);
+    const nights = (() => {
+  try {
+    const inDate = new Date(checkInStr);
+    const outDate = new Date(checkOutStr);
+    const ms = outDate.getTime() - inDate.getTime();
+    const diff = Math.ceil(ms / (1000 * 60 * 60 * 24));
+    return diff > 0 ? diff : 1;
+  } catch {
+    return 1;
+  }
+})();
 
-    // ✅ FIX 1: Price calculation corrected (Retail Price + Taxes)
-    const finalTotal = retailPrice + taxPrice;
+const retailPrice = parseFloat(retailPriceStr) * parseFloat(rooms) * nights;
+const taxPrice = parseFloat(taxPriceStr);
+
+// ✅ total
+const finalTotal = retailPrice + taxPrice;
 
 
     const token = sessionStorage.getItem('shineetrip_token');
@@ -381,7 +394,6 @@ const BookingPage: React.FC = () => {
                 },
                 theme: { "color": "#D2A256" }
             };
-
 
 
 
@@ -721,7 +733,7 @@ const BookingPage: React.FC = () => {
                 <div className="max-w-md mx-auto flex items-center justify-center gap-4">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-medium">1</div>
-                        <span className="font-medium">Room 1</span>
+                        <span className="font-medium">Room</span>
                     </div>
                     <div className="w-32 h-px bg-gray-300"></div>
                     <div className="flex items-center gap-3">
@@ -749,7 +761,7 @@ const BookingPage: React.FC = () => {
                                 adults={searchParams.get('adults') || '2'}
                                 children={searchParams.get('children') || '0'}
                                 roomName={roomName}
-                                roomCount={'1'}
+                                roomCount={rooms}
                             />
 
 

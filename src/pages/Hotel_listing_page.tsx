@@ -76,7 +76,7 @@ const GuestRow = ({ label, value, min, onMinus, onPlus }: { label: string; value
 
 
 const HotelListingPage: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate(); // ✅ Editable States
 
   const [currentLocation, setCurrentLocation] = useState(
@@ -134,36 +134,33 @@ const HotelListingPage: React.FC = () => {
   ]; // ✅ Function to handle navigation with new search parameters
 
   const handleSearch = () => {
-    setLoading(true);
-    setFetchError(null);
-
-    const searchLoc = currentLocation || searchParams.get("location") || "";
+    // Use the local states that were just updated by the inputs
+    const searchLoc = currentLocation.trim();
     const searchCin = currentCheckIn;
     const searchCout = currentCheckOut;
-    const searchRooms = rooms || searchParams.get("rooms") || "1";
 
+    // Simple validation
     const today = getTodayDateString();
-    if (currentCheckIn < today) {
-      alert(
-        "Check-in date cannot be in the past. Please select today or a future date.",
-      );
+    if (searchCin < today) {
+      alert("Check-in date cannot be in the past.");
       return;
     }
-    if (currentCheckOut <= currentCheckIn) {
+    if (searchCout <= searchCin) {
       alert("Check-out date must be after Check-in date.");
       return;
     }
 
-    const newSearchParams = new URLSearchParams({
+    // Constructing the URL explicitly
+    const query = new URLSearchParams({
       location: searchLoc,
       checkIn: searchCin,
       checkOut: searchCout,
       adults: currentAdults,
       children: currentChildren,
-      rooms: String(searchRooms), // Ensure rooms is added here
+      rooms: rooms,
     }).toString();
 
-    navigate(`/hotellists?${newSearchParams}`);
+    navigate(`/hotellists?${query}`);
   };
 
   // ----------------------------------------------------------------------
@@ -301,8 +298,8 @@ const HotelListingPage: React.FC = () => {
         (item): item is Hotel => item !== null,
       );
 
-      setHotels(finalHotelList); 
-      setHasMore(meta.hasNextPage || false); 
+      setHotels(finalHotelList);
+      setHasMore(meta.hasNextPage || false);
       // Initialize selected images
 
       const initialImages: { [key: number]: number } = {};
@@ -371,7 +368,7 @@ const HotelListingPage: React.FC = () => {
       const data = responseData.data || [];
       const meta = responseData.meta || {};
 
-      
+
       const hotelPromises = (Array.isArray(data) ? data : []).map(
         async (item: any) => {
           const hotel = item;
@@ -447,7 +444,7 @@ const HotelListingPage: React.FC = () => {
       setHotels((prev) => [...prev, ...finalHotelList]);
       setHasMore(meta.hasNextPage || false);
 
-     
+
       const newInitialImages: { [key: number]: number } = {};
       const currentHotelCount = hotels.length; // hotels.length will give the starting index for new data
       finalHotelList.forEach((_, index) => {
@@ -475,7 +472,7 @@ const HotelListingPage: React.FC = () => {
   useEffect(() => {
     fetchHotels(); // Calls the fetchHotels (Page 1 Only) function
   }, [fetchHotels, searchParams]); // searchParams dependency added
-  
+
 
   const totalReviewsCount = hotels.reduce(
     (sum, hotel) => sum + hotel.reviewsCount,
@@ -517,23 +514,23 @@ const HotelListingPage: React.FC = () => {
   }, [sortBy]); // Sync internal states when URL changes (Unchanged)
 
   useEffect(() => {
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      guestPickerRef.current &&
-      !guestPickerRef.current.contains(event.target as Node)
-    ) {
-      setShowGuestPicker(false);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        guestPickerRef.current &&
+        !guestPickerRef.current.contains(event.target as Node)
+      ) {
+        setShowGuestPicker(false);
+      }
+    };
+
+    if (showGuestPicker) {
+      document.addEventListener("mousedown", handleClickOutside);
     }
-  };
 
-  if (showGuestPicker) {
-    document.addEventListener("mousedown", handleClickOutside);
-  }
-
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, [showGuestPicker]);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showGuestPicker]);
 
 
   // Sync internal states when URL changes
@@ -546,14 +543,14 @@ const HotelListingPage: React.FC = () => {
     const urlChl = searchParams.get("children") || "0";
     const urlRms = searchParams.get("rooms") || "1";
 
-  
+
     setCurrentLocation(urlLoc);
     setCurrentCheckIn(urlCin);
     setCurrentCheckOut(urlCout);
     setCurrentAdults(urlAdl);
     setCurrentChildren(urlChl);
     setRooms(urlRms);
-  }, [searchParams]); 
+  }, [searchParams]);
 
 
   useEffect(() => {
@@ -570,7 +567,7 @@ const HotelListingPage: React.FC = () => {
   const handleHotelClick = (hotelId: string) => {
     const currentSearchParams = new URLSearchParams(searchParams.toString());
 
-    
+
     currentSearchParams.set("propertyId", hotelId);
     if (!currentSearchParams.has("rooms")) {
       currentSearchParams.set("rooms", String(rooms));
@@ -578,9 +575,9 @@ const HotelListingPage: React.FC = () => {
     navigate(`/room-booking/${hotelId}?${currentSearchParams}`);
   }; // ===============================================
 
-  const isLocationEmpty = currentLocation.trim() === ""; 
+  const isLocationEmpty = currentLocation.trim() === "";
   const handleViewAllHotels = () => {
-  
+
     const safeCheckIn = getTodayDateString();
 
     const tomorrow = new Date();
@@ -596,10 +593,24 @@ const HotelListingPage: React.FC = () => {
       checkOut: safeCheckOut,
       adults: currentAdults,
       children: currentChildren,
-      rooms: rooms || "1", 
+      rooms: rooms || "1",
     }).toString();
 
     navigate(`/hotellists?${searchQuery}`);
+  };
+
+  const handleSearch2 = () => {
+    const params = new URLSearchParams();
+
+    // Use current local states to build the URL
+    params.set("location", currentLocation);
+    params.set("checkIn", currentCheckIn);
+    params.set("checkOut", currentCheckOut);
+    params.set("adults", currentAdults);
+    params.set("children", currentChildren);
+    params.set("rooms", rooms);
+
+    navigate(`/hotellists?${params.toString()}`);
   };
 
   const handleSearchClick = () => {
@@ -607,14 +618,10 @@ const HotelListingPage: React.FC = () => {
     if (!token) {
       alert("Please log in to search for hotels.");
       return;
-    } 
-
-    if (isLocationEmpty) {
-      handleViewAllHotels();
-    } else {
-      
-      handleSearch();
     }
+
+    // Trigger the navigation which updates the URL
+    handleSearch2();
   }; // ===============================================
   // END NEW LOGIC BLOCK
   // ===============================================
@@ -648,139 +655,139 @@ const HotelListingPage: React.FC = () => {
           </div>
 
           {/* Check-in Field */}
-<div className="flex-1 w-full sm:max-w-[200px] bg-[#F4F1EC]/20 px-4 py-3 border-b sm:border-r sm:border-b-0 border-gray-300">
-  <div className="text-[14px] font-bold text-gray-900 mb-1 uppercase tracking-wide">
-    CHECK-IN
-  </div>
+          <div className="flex-1 w-full sm:max-w-[200px] bg-[#F4F1EC]/20 px-4 py-3 border-b sm:border-r sm:border-b-0 border-gray-300">
+            <div className="text-[14px] font-bold text-gray-900 mb-1 uppercase tracking-wide">
+              CHECK-IN
+            </div>
 
-  <div className="flex items-center gap-3">
-    {/* Yellow Calendar Icon */}
-    <button
-      type="button"
-      onClick={() => checkinRef.current?.showPicker()}
-      className="text-[#D2A256] hover:scale-110 transition-transform"
-    >
-      <Calendar className="w-7 h-7" />
-    </button>
+            <div className="flex items-center gap-3">
+              {/* Yellow Calendar Icon */}
+              <button
+                type="button"
+                onClick={() => checkinRef.current?.showPicker()}
+                className="text-[#D2A256] hover:scale-110 transition-transform"
+              >
+                <Calendar className="w-7 h-7" />
+              </button>
 
-    {/* Date Input */}
-    <input
-      ref={checkinRef}
-      type="date"
-      min={new Date().toISOString().split("T")[0]}
-      value={currentCheckIn}
-      onChange={(e) => setCurrentCheckIn(e.target.value)}
-      className="text-[18px] font-[700] text-gray-900 bg-transparent w-full focus:outline-none appearance-none"
-    />
-  </div>
-</div>
+              {/* Date Input */}
+              <input
+                ref={checkinRef}
+                type="date"
+                min={getTodayDateString()}
+                value={currentCheckIn} // Binds to state
+                onChange={(e) => setCurrentCheckIn(e.target.value)} // Updates state
+                className="text-[18px] font-[700] text-gray-900 bg-transparent w-full focus:outline-none appearance-none"
+              />
+            </div>
+          </div>
 
 
           {/* Check-out Field */}
           <div className="flex-1 w-full sm:max-w-[200px] bg-[#F4F1EC]/20 px-4 py-3 border-b sm:border-r sm:border-b-0 border-gray-300">
-  <div className="text-[14px] font-bold text-gray-900 mb-1 uppercase tracking-wide">
-    CHECK-OUT
-  </div>
+            <div className="text-[14px] font-bold text-gray-900 mb-1 uppercase tracking-wide">
+              CHECK-OUT
+            </div>
 
-  <div className="flex items-center gap-3">
-    {/* Yellow Calendar Icon */}
-    <button
-      type="button"
-      onClick={() => checkoutRef.current?.showPicker()}
-      className="text-[#D2A256] hover:scale-110 transition-transform"
-    >
-      <Calendar className="w-7 h-7" />
-    </button>
+            <div className="flex items-center gap-3">
+              {/* Yellow Calendar Icon */}
+              <button
+                type="button"
+                onClick={() => checkoutRef.current?.showPicker()}
+                className="text-[#D2A256] hover:scale-110 transition-transform"
+              >
+                <Calendar className="w-7 h-7" />
+              </button>
 
-    {/* Date Input */}
-    <input
-      ref={checkoutRef}
-      type="date"
-      min={new Date().toISOString().split("T")[0]}
-      value={currentCheckOut}
-      onChange={(e) => setCurrentCheckOut(e.target.value)}
-      className="text-[18px] font-[700] text-gray-900 bg-transparent w-full focus:outline-none appearance-none"
-    />
-  </div>
-</div>
+              {/* Date Input */}
+              <input
+                ref={checkoutRef}
+                type="date"
+                min={currentCheckIn} // Prevents picking date before check-in
+                value={currentCheckOut} // Binds to state
+                onChange={(e) => setCurrentCheckOut(e.target.value)} // Updates state
+                className="text-[18px] font-[700] text-gray-900 bg-transparent w-full focus:outline-none appearance-none"
+              />
+            </div>
+          </div>
 
 
           {/* Room & Guest Field */}
-{/* Room & Guest Field (SUMMARY STYLE) */}
-<div
-  ref={guestPickerRef}
-  className="flex-1 w-full sm:max-w-[320px] bg-[#F4F1EC]/20 px-4 py-3
+          {/* Room & Guest Field (SUMMARY STYLE) */}
+          <div
+            ref={guestPickerRef}
+            className="flex-1 w-full sm:max-w-[320px] bg-[#F4F1EC]/20 px-4 py-3
              border-b sm:border-r sm:border-b-0 border-gray-300
              cursor-pointer relative"
-  onClick={(e) => {
-    e.stopPropagation();
-    setShowGuestPicker(true);
-  }}
->
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowGuestPicker(true);
+            }}
+          >
 
-  <div className="text-[14px] font-bold text-gray-900 mb-1 uppercase tracking-wide">
-    Room & Guest
-  </div>
+            <div className="text-[14px] font-bold text-gray-900 mb-1 uppercase tracking-wide">
+              Room & Guest
+            </div>
 
-  <div className="flex items-center gap-3">
-    <Users className="w-5 h-5 text-[#D2A256]" />
+            <div className="flex items-center gap-3">
+              <Users className="w-5 h-5 text-[#D2A256]" />
 
-<span
-  spellCheck={false}
-  className="text-[20px] font-semibold text-gray-900"
->
-  {rooms} Room{Number(rooms) > 1 ? "s" : ""},{" "}
-  {currentAdults} Adult{Number(currentAdults) > 1 ? "s" : ""}
-</span>
+              <span
+                spellCheck={false}
+                className="text-[20px] font-semibold text-gray-900"
+              >
+                {rooms} Room{Number(rooms) > 1 ? "s" : ""},{" "}
+                {currentAdults} Adult{Number(currentAdults) > 1 ? "s" : ""}
+              </span>
 
-  </div>
+            </div>
 
 
-{showGuestPicker && (
-  <div
-  className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl p-4 w-[320px] z-50"
-  onClick={(e) => e.stopPropagation()}
->
-    
-    {/* Rooms */}
-    <GuestRow
-      label="Rooms"
-      value={rooms}
-      min={1}
-      onMinus={() => setRooms(String(Math.max(1, parseInt(rooms) - 1)))}
-      onPlus={() => setRooms(String(parseInt(rooms) + 1))}
-    />
+            {showGuestPicker && (
+              <div
+                className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl p-4 w-[320px] z-50"
+                onClick={(e) => e.stopPropagation()}
+              >
 
-    {/* Adults */}
-    <GuestRow
-      label="Adults"
-      value={currentAdults}
-      min={1}
-      onMinus={() =>
-        setCurrentAdults(String(Math.max(1, parseInt(currentAdults) - 1)))
-      }
-      onPlus={() =>
-        setCurrentAdults(String(parseInt(currentAdults) + 1))
-      }
-    />
+                {/* Rooms */}
+                <GuestRow
+                  label="Rooms"
+                  value={rooms}
+                  min={1}
+                  onMinus={() => setRooms(String(Math.max(1, parseInt(rooms) - 1)))}
+                  onPlus={() => setRooms(String(parseInt(rooms) + 1))}
+                />
 
-    {/* Children */}
-    <GuestRow
-      label="Children"
-      value={currentChildren}
-      min={0}
-      onMinus={() =>
-        setCurrentChildren(
-          String(Math.max(0, parseInt(currentChildren) - 1)),
-        )
-      }
-      onPlus={() =>
-        setCurrentChildren(String(parseInt(currentChildren) + 1))
-      }
-    />
-  </div>
-)}
-</div>
+                {/* Adults */}
+                <GuestRow
+                  label="Adults"
+                  value={currentAdults}
+                  min={1}
+                  onMinus={() =>
+                    setCurrentAdults(String(Math.max(1, parseInt(currentAdults) - 1)))
+                  }
+                  onPlus={() =>
+                    setCurrentAdults(String(parseInt(currentAdults) + 1))
+                  }
+                />
+
+                {/* Children */}
+                <GuestRow
+                  label="Children"
+                  value={currentChildren}
+                  min={0}
+                  onMinus={() =>
+                    setCurrentChildren(
+                      String(Math.max(0, parseInt(currentChildren) - 1)),
+                    )
+                  }
+                  onPlus={() =>
+                    setCurrentChildren(String(parseInt(currentChildren) + 1))
+                  }
+                />
+              </div>
+            )}
+          </div>
 
 
           {/* Search Button - Yellow/Gold color as in Figma */}
@@ -834,7 +841,7 @@ const HotelListingPage: React.FC = () => {
           </div>
         </div>
 
-       
+
       </div>
     </div>
   ); // --- Rendering UI ---
@@ -844,21 +851,21 @@ const HotelListingPage: React.FC = () => {
     // FIX: Only show full loading screen initially
     return (
       <div className="min-h-screen bg-gray-50 font-opensans pt-[116px] flex items-center justify-center">
-               {" "}
+        {" "}
         <div className="text-center">
-                   {" "}
+          {" "}
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Searching for properties...</p>
-                 {" "}
+          <p className="text-gray-600">Searching for properties...</p>
+          {" "}
         </div>
-             {" "}
+        {" "}
       </div>
     );
   } // Handle No Results State / Error State
   if (hasSearched && hotels.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 font-opensans pt-[116px]">
-                {SearchBar}       {" "}
+        {SearchBar}       {" "}
         <div className="max-w-7xl mx-auto px-6 py-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-6">
             Showing Properties in {location || "All Destinations"}
@@ -877,9 +884,9 @@ const HotelListingPage: React.FC = () => {
               </p>
             )}
           </div>
-                 {" "}
+          {" "}
         </div>
-             {" "}
+        {" "}
       </div>
     );
   }
@@ -897,21 +904,21 @@ const HotelListingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 font-opensans pt-[116px]">
-            {SearchBar}     {" "}
+      {SearchBar}     {" "}
       <div className="max-w-7xl mx-auto px-6 py-6">
-                {/* Results Header */}       {" "}
+        {/* Results Header */}       {" "}
         <div className="mb-6">
-                   {" "}
+          {" "}
           <h1 className="text-[24px] font-[600] text-gray-900">
-                        Showing Properties in {location || "All Destinations"} 
-                   {" "}
+            Showing Properties in {location || "All Destinations"}
+            {" "}
           </h1>
-                   {" "}
+          {" "}
           <span className="text-sm text-gray-600">
             {/*              {totalReviewsCount.toLocaleString()} Ratings found  */}
-                     {" "}
+            {" "}
           </span>
-                 {" "}
+          {" "}
         </div>
         {/* Hotel Cards */}
         <div className="space-y-6">
@@ -950,11 +957,10 @@ const HotelListingPage: React.FC = () => {
                               e.stopPropagation();
                               handleImageSelect(index, imgIndex);
                             }}
-                            className={`w-23 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${
-                              currentImageIndex === imgIndex
+                            className={`w-23 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all ${currentImageIndex === imgIndex
                                 ? "border-[#22C55E]"
                                 : "border-transparent opacity-60 hover:opacity-100"
-                            }`}
+                              }`}
                           >
                             <img
                               src={img}
@@ -979,11 +985,10 @@ const HotelListingPage: React.FC = () => {
                               {Array.from({ length: 5 }).map((_, i) => (
                                 <Star
                                   key={i}
-                                  className={`w-[20px] h-[20px] ${
-                                    i < Math.round(hotel.rating)
+                                  className={`w-[20px] h-[20px] ${i < Math.round(hotel.rating)
                                       ? "text-green-500 fill-green-500"
                                       : "text-gray-300"
-                                  }`}
+                                    }`}
                                 />
                               ))}
                             </div>
@@ -1135,26 +1140,26 @@ const HotelListingPage: React.FC = () => {
             );
           })}
         </div>
-                {/* Load More Button */}       {" "}
+        {/* Load More Button */}       {" "}
         <div className="flex justify-center mt-10">
-                   {" "}
+          {" "}
           {hasSearched && hotels.length > 0 && hasMore && !loading && (
             <button
               onClick={handleLoadMore}
               className="bg-gray-900 text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors"
             >
-                            Load More            {" "}
+              Load More            {" "}
             </button>
           )}
-                   {" "}
+          {" "}
           {loading && page > 1 && (
             <div className="text-gray-600">Loading more hotels...</div>
           )}
-                 {" "}
+          {" "}
         </div>
-             {" "}
+        {" "}
       </div>
-         {" "}
+      {" "}
     </div>
   );
 };

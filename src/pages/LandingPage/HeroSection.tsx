@@ -599,8 +599,9 @@ const handleDestinationClick = (destination: Destination) => {
                 {/* Check In */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-white font-opensans font-semibold text-[18px] mb-1 tracking-wider uppercase">
-                    <Calendar size={14} className="text-[#D2A256]" />
-                    CHECK-IN DATE *
+                   <Calendar size={14} className="text-[#D2A256]" />
+                          CHECK-IN DATE *
+                          
                   </div>
                   <input
                     type="date"
@@ -615,8 +616,9 @@ const handleDestinationClick = (destination: Destination) => {
                 {/* Check Out */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-white font-opensans font-semibold text-[18px] mb-1 tracking-wider uppercase">
-                    <Calendar size={14} className="text-[#D2A256]" />
-                    CHECK-OUT DATE *
+                  
+                          CHECK-OUT DATE *
+                            <Calendar size={14} className="text-[#D2A256]" />
                   </div>
                   <input
                     type="date"
