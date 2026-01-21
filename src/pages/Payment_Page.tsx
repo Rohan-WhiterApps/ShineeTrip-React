@@ -3,6 +3,7 @@ import { AlertCircle, ArrowLeft, Trash2, X, Phone, Mail, Award, Shield, Clock, E
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom'; // ✅ FIX 1: useNavigate import kiya
 import BookingSuccessCard from '../components/ui/BookingSuccessCard'; // ✅ NEW: Success Card Import
 import BookingOrderSummary from '../components/ui/BookingOrderSummary';
+import toast, { Toaster } from 'react-hot-toast'; // Add this at the top
 
 // Define global Razorpay object for TypeScript compiler
 declare global {
@@ -331,34 +332,31 @@ const finalTotal = retailPrice + taxPrice;
                 body: JSON.stringify(createOrderPayload),
             });
 
-            const responseText = await orderResponse.text();
+        
+          const responseText = await orderResponse.text();
 
-            console.log(responseText);
-            if (!orderResponse.ok) {
-                const errorStatus = orderResponse.status;
+if (!orderResponse.ok) {
+    const errorStatus = orderResponse.status;
+    setIsProcessing(false); // ✅ Stop the loader immediately
 
-                // ✅ CRITICAL FIX: Token Expiry (401/403) check
-                if (errorStatus === 401 || errorStatus === 403) {
-                    // Reset state & show auth popup
-                    sessionStorage.removeItem('shineetrip_token');
-                    setIsProcessing(false);
-                    setShowAuthErrorModal(true);
-                    return;
-                }
-                // Detailed error handling for 404/403/Customer Not Found
-                let errorMsg = `API failed (${orderResponse.status}).`;
-                try {
-                    const errorData = JSON.parse(responseText);
-                    if (orderResponse.status === 404) {
-                        errorMsg = `Error 404: API endpoint not found at ${CREATE_ORDER_URL}.`;
-                    } else if (errorData.message) {
-                        errorMsg = errorData.message;
-                    }
-                } catch {
-                    errorMsg = `Server Error (${orderResponse.status}).`;
-                }
-                throw new Error(errorMsg);
-            }
+    if (errorStatus === 401 || errorStatus === 403) {
+        sessionStorage.removeItem('shineetrip_token');
+        setShowAuthErrorModal(true);
+        return;
+    }
+
+    let errorMsg = `API failed (${orderResponse.status}).`;
+    try {
+        const errorData = JSON.parse(responseText);
+        errorMsg = errorData.message || errorMsg;
+    } catch {
+        errorMsg = "Server Error. Please try again later.";
+    }
+
+    // ✅ SHOW TOAST INSTEAD OF THROWING
+    toast.error(errorMsg); 
+    return; // Exit the function gracefully
+}
 
             const orderData = JSON.parse(responseText);
             const razorpayOrderId = orderData.order.razorpayOrderId || orderData.razorpay_order_id;
@@ -464,22 +462,23 @@ const finalTotal = retailPrice + taxPrice;
             });
 
             if (verifyResponse.ok) {
-                const verifydata = await verifyResponse.json();
-                console.log(verifydata);
-                await createInvoiceAfterPayment(backendId);
-                paymentCompletedRef.current = true;
-                if (paymentTimeoutRef.current) clearTimeout(paymentTimeoutRef.current);
+            await createInvoiceAfterPayment(backendId);
+            paymentCompletedRef.current = true;
+            if (paymentTimeoutRef.current) clearTimeout(paymentTimeoutRef.current);
 
-                setPaymentMessage('Booking successful! Invoice Generated.');
-                setSuccessOrderId(verificationPayload.razorpayOrderId);
-                setIsBookingSuccessful(true);
-            } else {
-                const errorData = await verifyResponse.json();
-                throw new Error(errorData.message || 'Verification failed');
-            }
+            toast.success('Payment Verified Successfully!'); // Success Toast
+            setSuccessOrderId(verificationPayload.razorpayOrderId);
+            setIsBookingSuccessful(true);
+        } else {
+            // BACKEND ERROR HANDLING
+            const errorMsg = verifydata.message || 'Verification failed';
+            toast.error(errorMsg); // Show backend error in Toast
+            setIsProcessing(false); // STOP PROCESSING
+        }
         } catch (error: any) {
             console.error("Verification Catch Error:", error);
-            setPaymentMessage(error.message || 'Payment verification failed.');
+        toast.error(error.message || 'Something went wrong. Please contact support.'); // Catch Toast
+        setIsProcessing(false); // STOP PROCESSING
         } finally {
             setIsProcessing(false);
         }
@@ -555,6 +554,7 @@ const finalTotal = retailPrice + taxPrice;
 
     return (
         <div className="min-h-screen bg-gray-100 pt-[116px]">
+            <Toaster position="top-right" reverseOrder={false} />
             {/* ✅ NEW: Timeout/Connection Lost Modal */}
             {showTimeoutModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center px-4 animate-in fade-in duration-300">

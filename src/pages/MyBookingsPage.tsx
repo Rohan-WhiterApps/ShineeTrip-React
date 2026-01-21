@@ -129,9 +129,11 @@ const BookingDetailModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClos
     console.log(room); 
     const userName = sessionStorage.getItem('shineetrip_name') || "Guest User";
     const userEmail = sessionStorage.getItem('shineetrip_email') || "N/A";
-
+     const handlePrint = () => {
+    window.print();
+  };
     // 🟢 DYNAMIC PRICE CALCULATION
-    const roomBasePrice = Number(room.pricePerNight) || 0;
+    const roomBasePrice = Number(room.totalAmount) || 0;
     const totalOrderPrice =  Number(room.totalAmount) || 0;
     const taxesAndFees = totalOrderPrice - roomBasePrice;
 
@@ -261,7 +263,7 @@ const BookingDetailModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClos
                 {/* Footer Actions */}
                 <div className="p-6 bg-white border-t border-gray-100 flex gap-4">
                     <button
-                        onClick={() => handleDownloadPDF(order, room)}
+                        onClick={() => handlePrint()}
                         className="flex-1 flex items-center justify-center gap-2 bg-[#D2A256] text-white py-4 rounded-2xl text-sm font-black hover:bg-[#b88d45] transition-all shadow-lg"
                     >
                         <FileText className="w-5 h-5" /> Download Voucher
