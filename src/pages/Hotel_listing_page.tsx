@@ -1074,7 +1074,7 @@ const HotelListingPage: React.FC = () => {
                           <h3 className="text-[18px] font-semibold text-gray-900 mb-3">
                             Coupons
                           </h3>
-
+                          {/* 
                           <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full text-sm font-medium">
@@ -1098,7 +1098,7 @@ const HotelListingPage: React.FC = () => {
                               Pay using Credit Cards EMI to avail the offer with
                               No Cost EMI
                             </p>
-                          </div>
+                          </div> */}
                         </div>
 
                         {/* Price */}
