@@ -206,7 +206,8 @@ export const HolidaySearch = ({
             <div className="p-1">
               <button 
                 onClick={handleListingSearch}
-                className="bg-black text-white p-4 rounded-full hover:bg-gray-800 transition-all shadow-lg flex items-center justify-center active:scale-95"
+                // Updated: bg-black -> bg-[#C9A961] and hover color adjusted
+                className="bg-[#C9A961] text-white p-4 rounded-full hover:bg-[#b39552] transition-all shadow-lg flex items-center justify-center active:scale-95"
               >
                 <Search size={20} />
               </button>

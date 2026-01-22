@@ -7,6 +7,7 @@ import { HolidaySearch } from "../components/HolidaySearch";
 import { ItinerarySection } from "../components/ItinerarySection";
 import { SummarySection } from "../components/SummarySection";
 import { GalleryModal } from "../components/GalleryModal";
+import { NewSearch } from "../components/NewSearch";
 
 const PackageDetailsPage = () => {
   const { id } = useParams();
