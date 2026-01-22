@@ -69,7 +69,7 @@ export const PackageSelectionModal = ({
       <div className="bg-white w-full max-w-[450px] rounded-t-[24px] md:rounded-[24px] shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-300">
         
         {/* Header - Light Sky Blue Background */}
-        <div className="flex justify-between items-center px-6 py-5 bg-[#E6F4FF] border-b border-blue-100">
+        <div className="flex justify-between items-center px-6 py-5 bg-[#5271c79c] border-b border-blue-100">
           <h3 className="font-bold text-gray-900 text-lg truncate pr-4 leading-tight">{data.title}</h3>
           <button onClick={onClose} className="p-2 bg-white hover:bg-gray-50 rounded-full transition-colors shrink-0 shadow-sm">
             <X size={18} className="text-gray-500" />
