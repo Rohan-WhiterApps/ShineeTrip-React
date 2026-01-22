@@ -110,7 +110,7 @@ export const GalleryModal = ({ isOpen, onClose, title, imageCategories }: Galler
         {/* 4. Responsive Photo Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredImages.map((img: any, i: number) => (
-            <div key={img.id || i} className="aspect-[4/3] rounded-[32px] overflow-hidden shadow-xl group relative bg-gray-50 border border-gray-100">
+            <div key={img.id || i} className="aspect-[4/3] rounded-[22px] overflow-hidden shadow-xl group relative bg-gray-50 border border-gray-100">
               <img 
                 src={img.image_url}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"

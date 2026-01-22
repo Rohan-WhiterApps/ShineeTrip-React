@@ -25,5 +25,6 @@ export const PackageTabs = ({ activeTab, setActiveTab }: any) => {
         ))}
       </div>
     </div>
-  );
+  </div>
+);
 };
