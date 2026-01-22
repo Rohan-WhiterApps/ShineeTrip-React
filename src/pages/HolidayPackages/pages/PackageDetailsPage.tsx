@@ -85,15 +85,15 @@ const PackageDetailsPage = () => {
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] font-opensans animate-in fade-in duration-700">
-      <div className="pt-30">
-        <HolidaySearch isDetailsPage={true} persons={persons} setPersons={setPersons} />
+      <div className="pt-33">
+        <NewSearch isDetailsPage={true} persons={persons} setPersons={setPersons} />
       </div>
 
-    <div className="max-w-1480px mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+    <div className="max-w-[1480px]  mx-auto px-4 sm:px-6 lg:px-8 mt-5">
   {/* The White Card Container */}
- <div className="bg-white rounded-[32px] border border-gray-100 shadow-xl overflow-hidden p-6 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col h-full">
-    <div className="flex flex-col md:flex-row md:items-end justify-evenly gap-100 mb-8">
-      <div className="space-y-3">
+ <div className=" rounded-[32px] border border-gray-100 shadow-xl overflow-hidden p-2 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col h-full">
+    <div className="flex  flex-col md:flex-row md:items-end justify-evenly gap-100 mb-8">
+      <div className="space-y-2">
         {/* Title */}
         <h1 className="text-2xl md:text-2xl font-extrabold text-[#2C4A5E] tracking-tight leading-tight">
           {holiday?.title}
@@ -139,9 +139,7 @@ const PackageDetailsPage = () => {
         imageCategories={galleryData} 
       />
     
-        <div className="mt-auto pt-6">
-  <PackageTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-</div>
+
         </div>
          
 </div>
@@ -179,7 +177,11 @@ const PackageDetailsPage = () => {
       )}
 
      
-      
+<div className="max-w-[1390px] z-50 rounded-2xl mx-auto w-full pt-6">
+  <PackageTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+</div>
+
+
      {/* Increased width container from 7xl to 1440px */}
 <div className="max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-10 py-10">
   <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12">

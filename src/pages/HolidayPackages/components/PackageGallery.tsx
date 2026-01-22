@@ -40,12 +40,13 @@ export const PackageGallery = ({ heroImage, title, onOpenGallery, imageCategorie
             alt={title} 
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
           />
-          <button 
-            onClick={onOpenGallery}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-[#C9A961] text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-2xl hover:bg-[#b39552] transition-all flex items-center gap-2 whitespace-nowrap z-10 active:scale-95"
-          >
-            <ImageIcon size={18} /> View {totalPhotos} Photos
-          </button>
+       <button 
+  onClick={onOpenGallery}
+  className="absolute bottom-6 right-6 bg-[#C9A961] text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-2xl hover:bg-[#b39552] transition-all flex items-center gap-2 whitespace-nowrap z-10 active:scale-95"
+>
+  <ImageIcon size={18} /> View {totalPhotos} Photos
+</button>
+
         </div>
 
         {/* 2. Center Image - Dynamic from validCategories */}

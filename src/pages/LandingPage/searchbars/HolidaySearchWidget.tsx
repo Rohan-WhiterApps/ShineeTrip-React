@@ -173,7 +173,7 @@ export const HolidaySearchWidget = () => {
   return (
     <>
       <div className="w-full max-w-6xl mx-auto p-4 relative z-20">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative bg-white/5 backdrop-blur-sm p-3 rounded-[2rem] border border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative bg-white/10 backdrop-blur-sm p-3 rounded-[2rem]  border-white/10">
           
           {/* --- 1. DESTINATION INPUT --- */}
           <div 
