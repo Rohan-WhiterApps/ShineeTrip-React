@@ -12,16 +12,14 @@ const PackageDetailsPage = () => {
   const { id } = useParams();
   const [activeTab, setActiveTab] = useState('itineraries');
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
-  const [itineraryData, setItineraryData] = useState(null);
-  const [summaryData, setSummaryData] = useState(null);
-  const [priceData, setPriceData] = useState(null);
-  const [galleryData, setGalleryData] = useState([]);
+  const [itineraryData, setItineraryData] = useState<any>(null);
+  const [summaryData, setSummaryData] = useState<any>(null);
+  const [priceData, setPriceData] = useState<any>(null);
+  const [galleryData, setGalleryData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
   const [persons, setPersons] = useState(Number(searchParams.get("persons")) || 1);
   const location = useLocation();
-  const [city, setCity] = useState(searchParams.get("city") || "");
-  const [date, setDate] = useState(searchParams.get("departureDate") || "");
 
   const userPreference = location.state?.type || 'flight';
 
@@ -55,13 +53,13 @@ const PackageDetailsPage = () => {
             totalDays: mainItinerary.days?.length || 0,
             grandTotal: priceJson?.total_price_per_adult || mainItinerary.holidayPackage?.price?.total_price_per_adult || 0,
             discount: priceJson?.discount || 0,
-            days: mainItinerary.days?.map((day) => ({
+            days: mainItinerary.days?.map((day: any) => ({
               id: day.id,
               dayNumber: day.dayNumber,
-              flightsAndTransfers: day.items?.filter((i) => i.type === 'flight' || i.type === 'transfer').length || 0,
-              hotels: day.items?.filter((i) => i.type === 'hotel').length || 0,
-              activities: day.items?.filter((i) => i.type === 'sightseeing').length || 0,
-              meals: day.items?.filter((i) => i.type === 'meal').length || 0,
+              flightsAndTransfers: day.items?.filter((i: any) => i.type === 'flight' || i.type === 'transfer').length || 0,
+              hotels: day.items?.filter((i: any) => i.type === 'hotel').length || 0,
+              activities: day.items?.filter((i: any) => i.type === 'sightseeing').length || 0,
+              meals: day.items?.filter((i: any) => i.type === 'meal').length || 0,
             })) || []
           };
           setSummaryData(calculatedSummary);
@@ -82,23 +80,33 @@ const PackageDetailsPage = () => {
     </div>
   );
 
-  if (!itineraryData) return (
-    <div className="h-screen w-full flex items-center justify-center bg-white font-bold text-gray-400 text-center p-6">
-      Package details currently unavailable.
-    </div>
-  );
-
-  const holiday = itineraryData.holidayPackage;
+  const holiday = itineraryData?.holidayPackage;
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] font-opensans animate-in fade-in duration-700">
-      <div className="pt-30"> 
-        <HolidaySearch 
-        isDetailsPage={true}
-        persons={persons} 
-        setPersons={setPersons}
-        />
+      <div className="pt-30">
+        <HolidaySearch isDetailsPage={true} persons={persons} setPersons={setPersons} />
       </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-4xl font-bold text-[#2C4A5E] tracking-tight">{holiday?.title}</h1>
+            <div className="flex items-center gap-3 text-sm font-medium">
+              <span className="text-[#C9A961] font-bold">{holiday?.nights} Nights / {holiday?.days} Days</span>
+              <span className="text-gray-300">|</span>
+              <span className="text-gray-500 italic">{holiday?.included_cities?.join(' • ')}</span>
+            </div>
+          </div>
+          
+          <button 
+            onClick={() => navigator.share ? navigator.share({title: holiday?.title, url: window.location.href}) : navigator.clipboard.writeText(window.location.href)}
+            className="flex items-center gap-2 px-4 py-2 border rounded-full text-xs font-bold hover:bg-gray-50 transition-all text-[#2C4A5E]"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            SHARE
+          </button>
+        </div>
 
         <PackageGallery 
           heroImage={holiday?.hero_image}
@@ -108,45 +116,23 @@ const PackageDetailsPage = () => {
         />
       </div>
 
-      {/* --- Full-Screen Gallery Big Card Modal --- */}
       {isGalleryOpen && (
         <div className="fixed inset-0 z-[1000] bg-[#F2F2F2] flex flex-col animate-in fade-in duration-500 p-4 md:p-6">
           <div className="flex-1 flex flex-col bg-white rounded-[32px] shadow-2xl overflow-hidden border border-gray-200">
-            
-            {/* Header Section Inside Card */}
-            <div 
-              className="w-full flex items-center justify-between border-b border-gray-100 bg-white"
-              style={{ padding: '24px 40px' }}
-            >
+            <div className="w-full flex items-center justify-between border-b border-gray-100 bg-white" style={{ padding: '24px 40px' }}>
               <div className="flex items-center gap-8 overflow-hidden">
                 <div className="flex flex-col min-w-0">
-                  <h2 className="text-2xl font-bold text-[#2C4A5E] truncate max-w-[300px] md:max-w-none">
-                    {holiday?.title}
-                  </h2>
+                  <h2 className="text-2xl font-bold text-[#2C4A5E] truncate max-w-[300px] md:max-w-none">{holiday?.title}</h2>
                   <div className="flex items-center gap-3 text-sm mt-1">
                     <span className="bg-[#E3F2FD] text-[#3A96DA] text-xs font-bold px-3 py-1.5 rounded-xl border border-[#B3D9F2] shrink-0">
                       {holiday?.nights}N/{holiday?.days}D
                     </span>
                     <span className="text-gray-300">|</span>
-                    <span className="text-gray-400 font-medium truncate italic">
-                      {holiday?.included_cities?.join(' • ')}
-                    </span>
+                    <span className="text-gray-400 font-medium truncate italic">{holiday?.included_cities?.join(' • ')}</span>
                   </div>
                 </div>
-
-                <button 
-                  onClick={() => navigator.share && navigator.share({title: holiday?.title, url: window.location.href})}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 hover:bg-gray-100 transition-all border border-gray-200 group"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#C9A961]"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                  <span className="text-[11px] font-black text-[#2C4A5E] uppercase tracking-widest">Share</span>
-                </button>
               </div>
-
-              <button 
-                onClick={() => setIsGalleryOpen(false)}
-                className="flex items-center gap-4 shrink-0 group"
-              >
+              <button onClick={() => setIsGalleryOpen(false)} className="flex items-center gap-4 shrink-0 group">
                 <span className="hidden md:inline text-[11px] font-bold text-gray-400 group-hover:text-black transition-colors tracking-[0.2em]">CLOSE</span>
                 <div className="w-12 h-12 flex items-center justify-center bg-black text-white rounded-full group-hover:rotate-90 transition-all duration-300 shadow-lg">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -155,47 +141,26 @@ const PackageDetailsPage = () => {
                 </div>
               </button>
             </div>
-
-            {/* Gallery Content Area */}
             <div className="flex-1 overflow-y-auto">
-              <GalleryModal 
-                isOpen={true} 
-                onClose={() => setIsGalleryOpen(false)} 
-                title={holiday?.title} 
-                imageCategories={galleryData} 
-              />
+              <GalleryModal isOpen={true} onClose={() => setIsGalleryOpen(false)} title={holiday?.title} imageCategories={galleryData} />
             </div>
           </div>
         </div>
       )}
 
-      {/* --- Tabs and Detailed Sections --- */}
       <PackageTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-8">
             {activeTab === 'itineraries' && <ItinerarySection days={itineraryData?.days || []} holiday={holiday} summary={summaryData} />}
             {activeTab === 'summary' && <SummarySection days={itineraryData?.days || []} summary={summaryData} />}
             {activeTab === 'policies' && (
-  <div className="p-8 bg-white rounded-[30px] border border-gray-100 shadow-sm animate-in fade-in duration-500">
-    <h3 className="text-xl font-bold text-[#2C4A5E] mb-6 border-b pb-4">
-      Policies & Cancellation
-    </h3>
-    
-    <div 
-     
-      className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-6 rounded-2xl border border-dashed overflow-hidden wrap-break-word"
-      style={{ 
-        wordBreak: 'break-word', 
-        overflowWrap: 'anywhere' 
-      }}
-      dangerouslySetInnerHTML={{ 
-        __html: holiday?.policies || "Standard policies apply." 
-      }} 
-    />
-  </div>
-)}
+              <div className="p-8 bg-white rounded-[30px] border border-gray-100 shadow-sm">
+                <h3 className="text-xl font-bold text-[#2C4A5E] mb-6 border-b pb-4">Policies & Cancellation</h3>
+                <div className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-6 rounded-2xl border border-dashed" dangerouslySetInnerHTML={{ __html: holiday?.policies || "Standard policies apply." }} />
+              </div>
+            )}
           </div>
           <div className="lg:col-span-4">
             <PricingSidebar priceData={priceData || holiday?.price} calculatedSummary={summaryData} defaultOption={userPreference} persons={persons} />
