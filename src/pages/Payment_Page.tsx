@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, ArrowLeft, Trash2, X, Phone, Mail, Award, Shield, Clock, Edit2, Loader2, ArrowRight, Plus } from 'lucide-react';
-import { useSearchParams, useNavigate, useParams } from 'react-router-dom'; // ✅ FIX 1: useNavigate import kiya
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
+import { useCallback } from 'react';// ✅ FIX 1: useNavigate import kiya
 import BookingSuccessCard from '../components/ui/BookingSuccessCard'; // ✅ NEW: Success Card Import
 import BookingOrderSummary from '../components/ui/BookingOrderSummary';
 import toast, { Toaster } from 'react-hot-toast'; // Add this at the top
@@ -36,7 +37,7 @@ const BookingPage: React.FC = () => {
         specialRequests: '',
         agreePolicy: false
     });
-
+    const [catalogPrices, setCatalogPrices] = useState<any[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentMessage, setPaymentMessage] = useState('');
     const [isBookingSuccessful, setIsBookingSuccessful] = useState(false); // ✅ NEW State for success card
@@ -81,7 +82,44 @@ const BookingPage: React.FC = () => {
         setGuestList(updatedList);
     };
 
-
+    const fetchCatalogPrices = useCallback(async () => {
+     try {
+       const token = sessionStorage.getItem("shineetrip_token");
+       const customerid = sessionStorage.getItem("shineetrip_db_customer_id");
+   
+       // Safety check: only call if we have a token
+       if (!token) return;
+   
+       // Use backticks for template literals
+       const discounturl = `http://46.62.160.188:3000/catalog-price-rules?customerid=${customerid || ""}`;
+   
+       const response = await fetch(discounturl, {
+         method: "GET",
+         headers: {
+           Authorization: `Bearer ${token}`,
+           "Content-Type": "application/json",
+         },
+       });
+   
+       if (response.ok) {
+         const data = await response.json();
+         // Most APIs wrap results in a 'data' key or return the array directly
+         // Update this based on your exact API response structure
+           const rules = Array.isArray(data) ? data : (data.data || []);
+           console.log(rules); 
+         setCatalogPrices(rules);
+       } else {
+         console.error("Failed to fetch discounts:", response.status);
+       }
+     } catch (error) {
+       console.error("Error fetching catalog prices:", error);
+     }
+   }, []);
+   
+     // --- EFFECT TO TRIGGER FETCH ---
+     useEffect(() => {
+       fetchCatalogPrices();
+     }, [fetchCatalogPrices]);
 
 
     const navigate = useNavigate();
@@ -1271,61 +1309,64 @@ if (!orderResponse.ok) {
                                 </div>
                             </div>
 
-                            {/* 2. Coupon Code Section (Design Matched) */}
-                            {/* <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-gray-100 p-6">
-            <h3 className="font-bold text-gray-900 mb-5 text-base">Coupon Code</h3> */}
+                         
+                             <div className="bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] border border-gray-100 p-6">
+  <h3 className="font-bold text-gray-900 mb-5 text-base">Coupon Code</h3>
 
-                            {/* Coupon Options */}
-                            {/* <div className="space-y-4">
-                
-                <label className="flex items-start gap-3 cursor-pointer group relative">
-                    <div className="mt-1">
-                        <input type="radio" name="coupon" className="peer sr-only" />
-                        <div className="w-4 h-4 rounded-full border border-gray-300 peer-checked:border-[#B98E45] peer-checked:bg-[#B98E45] relative"></div>
-                    </div>
-                    <div className="flex-1">
-                        <div className="flex justify-between w-full">
-                            <span className="font-bold text-gray-800 text-sm">MMTSMARTDEAL</span>
-                            <span className="font-bold text-gray-900 text-sm">₹662</span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1 group-hover:text-gray-700 transition-colors">
-                            Congratulations! Discount of ₹1191 Applied
-                        </p>
-                    </div>
-                </label>
+  <div className="space-y-4">
+  {catalogPrices.length > 0 ? (
+    catalogPrices.map((rule, index) => {
+      // Calculate display percentage (0.1 -> 10%)
+      const percentageText = rule.reduction_type === "percentage" 
+        ? `${(parseFloat(rule.reduction) * 100).toFixed(0)}% OFF` 
+        : `${rule.currency?.symbol || '₹'}${rule.reduction} OFF`;
 
-                
-                <label className="flex items-start gap-3 cursor-pointer group relative">
-                    <div className="mt-1">
-                        <input type="radio" name="coupon" className="peer sr-only" />
-                         <div className="w-4 h-4 rounded-full border border-gray-300 peer-checked:border-[#B98E45] peer-checked:bg-[#B98E45]"></div>
-                    </div>
-                    <div className="flex-1">
-                        <div className="flex justify-between w-full">
-                            <span className="font-bold text-gray-800 text-sm">WELCOMETRIP</span>
-                            <span className="font-bold text-gray-900 text-sm">₹500</span>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">
-                            Flat ₹500 off on your first booking.
-                        </p>
-                    </div>
-                </label>
-            </div> */}
+      return (
+        <label key={rule.id || index} className="flex items-start gap-3 cursor-pointer group relative">
+          <div className="mt-1">
+            <input type="radio" name="coupon" className="peer sr-only" />
+            <div className="w-4 h-4 rounded-full border border-gray-300 peer-checked:border-[#4585b9] peer-checked:bg-[#4c8ae7] transition-all"></div>
+          </div>
+          
+          <div className="flex-1">
+            <div className="flex justify-between w-full">
+              {/* Top Line: Name and Base Price */}
+              <span className="font-bold text-gray-800 text-sm uppercase">
+                {rule.group?.name || "Discount"}
+              </span>
+              <span className="font-bold text-gray-900 text-sm">
+                ₹{rule.base_price}
+              </span>
+            </div>
+            
+            {/* Second Line: Percentage/Reduction info */}
+            <p className="text-xs text-green-600 font-medium mt-1 group-hover:text-green-700 transition-colors">
+              Congratulations! Discount of {percentageText} Applied
+            </p>
+          </div>
+        </label>
+      );
+    })
+  ) : (
+    <p className="text-sm text-gray-400 italic">No coupons available.</p>
+  )}
+</div>
 
-                            {/* Have a Coupon Code Input */}
-                            {/* <div className="mt-6 pt-4 border-t border-gray-100">
-                <div className="relative">
-                    <input 
-                        type="text" 
-                        placeholder="Have a Coupon Code?" 
-                        className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:border-[#B98E45] focus:bg-white transition-all placeholder:text-gray-400"
-                    />
-                    <button className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B98E45] hover:text-[#a37d3b]">
-                        <ArrowRight size={20} />
-                    </button>
-                </div>
-            </div> */}
-                            {/* </div> */}
+  {/* Manual Entry Field */}
+  <div className="mt-6 pt-4 border-t border-gray-100">
+    <div className="relative">
+      <input
+        type="text"
+        placeholder="Have a Coupon Code?"
+        className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium focus:outline-none focus:border-[#B98E45] focus:bg-white transition-all placeholder:text-gray-400"
+      />
+      <button className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B98E45] hover:text-[#a37d3b]">
+        {/* Make sure Lucide ArrowRight is imported */}
+        <ArrowRight size={20} />
+      </button>
+    </div>
+  </div>
+</div>
 
                         </div>
                     </div>
