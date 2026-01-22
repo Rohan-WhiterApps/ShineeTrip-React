@@ -147,7 +147,7 @@ const handleLogout = async () => {
 
   return (
     <>
-      <nav className="fixed w-full bg-white backdrop-blur-md z-50 shadow-sm font-opensans">
+      <nav className="fixed w-full bg-white backdrop-blur-md z-90 shadow-sm font-opensans">
         {/* Top Bar - Hidden on Landing Page */}
         {!isLandingPage && (
           <div className="w-full bg-[#263238] text-white py-2 px-4 sm:px-6 lg:px-8 hidden md:flex justify-between items-center text-sm font-medium">

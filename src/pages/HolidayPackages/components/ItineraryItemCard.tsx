@@ -13,17 +13,21 @@ export const ItineraryItemCard = ({ item }: any) => {
             <Plane size={24} className="text-blue-500" />
           </div>
           <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Flight Included</p>
-            <h4 className="font-bold text-gray-800">
+            {/* Updated: text-xs -> text-[18px] font-opensans */}
+            <p className="text-[18px] font-opensans font-bold text-gray-400 uppercase tracking-wider">Flight Included</p>
+            {/* Updated: Added text-[18px] font-opensans */}
+            <h4 className="text-[18px] font-opensans font-bold text-gray-800">
               {meta.from || "Origin"} to {meta.to || "Destination"}
             </h4>
-            <p className="text-[10px] text-blue-500 font-bold uppercase mt-0.5">
+            {/* Updated: text-[10px] -> text-[18px] font-opensans */}
+            <p className="text-[18px] font-opensans text-blue-500 font-bold uppercase mt-0.5">
               {meta.airline_name || "Confirmed Airline"}
             </p>
           </div>
         </div>
         <div className="text-right">
-          <span className="text-[10px] font-black bg-blue-100 text-blue-600 px-2 py-1 rounded-md uppercase">
+          {/* Updated: text-[10px] -> text-[18px] font-opensans */}
+          <span className="text-[18px] font-opensans font-black bg-blue-100 text-blue-600 px-2 py-1 rounded-md uppercase">
             {meta.class || "Economy"}
           </span>
         </div>
@@ -43,23 +47,28 @@ export const ItineraryItemCard = ({ item }: any) => {
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">
+              {/* Updated: text-[10px] -> text-[18px] font-opensans */}
+              <p className="text-[18px] font-opensans font-bold text-blue-500 uppercase tracking-wider">
                 {meta.room_type || "Standard Room"}
               </p>
-              <h4 className="font-bold text-gray-800 text-lg leading-tight">
+              {/* Updated: text-lg -> text-[18px] font-opensans */}
+              <h4 className="text-[18px] font-opensans font-bold text-gray-800 leading-tight">
                 {meta.hotel_name || "Premium Stay"}
               </h4>
             </div>
-            <span className="bg-green-50 text-green-600 text-[10px] font-bold px-2 py-1 rounded-md border border-green-100">
+            {/* Updated: text-[10px] -> text-[18px] font-opensans */}
+            <span className="bg-green-50 text-green-600 text-[18px] font-opensans font-bold px-2 py-1 rounded-md border border-green-100">
               {meta.meal_plan || "EP (Room Only)"}
             </span>
           </div>
           <div className="flex items-center gap-4 mt-3">
-             <div className="flex items-center gap-1 text-gray-400 text-[11px] font-medium">
+             {/* Updated: text-[11px] -> text-[18px] font-opensans */}
+             <div className="flex items-center gap-1 text-gray-400 text-[18px] font-opensans font-medium">
                 <Coffee size={14} className="text-[#C9A961]" /> 
                 {meta.inclusions?.includes("Breakfast") ? "Breakfast Included" : "Meals as per plan"}
              </div>
-             <div className="flex items-center gap-1 text-gray-400 text-[11px] font-medium">
+             {/* Updated: text-[11px] -> text-[18px] font-opensans */}
+             <div className="flex items-center gap-1 text-gray-400 text-[18px] font-opensans font-medium">
                 <MapPin size={14} className="text-[#C9A961]" /> 
                 {meta.city || "Destination"}
              </div>
@@ -78,12 +87,16 @@ export const ItineraryItemCard = ({ item }: any) => {
             <Car size={24} className="text-[#AB7E29]" />
           </div>
           <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Transfer</p>
-            <h4 className="font-bold text-gray-800">{meta.transfer_type || "Private Transfer"}</h4>
-            <p className="text-[10px] text-gray-500 font-medium">{meta.route || "Point to Point"}</p>
+            {/* Updated: text-xs -> text-[18px] font-opensans */}
+            <p className="text-[18px] font-opensans font-bold text-gray-400 uppercase tracking-wider">Transfer</p>
+            {/* Updated: Added text-[18px] font-opensans */}
+            <h4 className="text-[18px] font-opensans font-bold text-gray-800">{meta.transfer_type || "Private Transfer"}</h4>
+            {/* Updated: text-[10px] -> text-[18px] font-opensans */}
+            <p className="text-[18px] font-opensans text-gray-500 font-medium">{meta.route || "Point to Point"}</p>
           </div>
         </div>
-        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Confirmed</span>
+        {/* Updated: text-[10px] -> text-[18px] font-opensans */}
+        <span className="text-[18px] font-opensans font-bold text-gray-400 uppercase tracking-widest">Confirmed</span>
       </div>
     );
   }

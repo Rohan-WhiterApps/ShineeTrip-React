@@ -504,6 +504,8 @@ const handleDestinationClick = (destination: Destination) => {
                 <X size={24} />
               </button>
               
+
+
                 {searchTab === "Holiday Packages" ? (
                 <HolidaySearchWidget /> 
               ) : (

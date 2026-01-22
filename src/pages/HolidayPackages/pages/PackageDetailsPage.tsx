@@ -20,6 +20,8 @@ const PackageDetailsPage = () => {
   const [searchParams] = useSearchParams();
   const [persons, setPersons] = useState(Number(searchParams.get("persons")) || 1);
   const location = useLocation();
+  const [city, setCity] = useState(searchParams.get("city") || "");
+  const [date, setDate] = useState(searchParams.get("departureDate") || "");
 
   const userPreference = location.state?.type || 'flight';
 
@@ -76,38 +78,27 @@ const PackageDetailsPage = () => {
   if (loading) return (
     <div className="h-screen w-full flex flex-col items-center justify-center gap-4 bg-white">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#C9A961]"></div>
-      <p className="text-[#5A5550] font-bold tracking-widest uppercase text-[10px]">Syncing Luxury Experience...</p>
+      <p className="text-[#5A5550] font-bold tracking-widest uppercase text-[18px] font-opensans">Syncing Luxury Experience...</p>
     </div>
   );
 
-  const holiday = itineraryData?.holidayPackage;
+  if (!itineraryData) return (
+    <div className="h-screen w-full flex items-center justify-center bg-white font-bold text-gray-400 text-center p-6">
+      Package details currently unavailable.
+    </div>
+  );
+
+  const holiday = itineraryData.holidayPackage;
 
   return (
     <div className="min-h-screen bg-[#FDFDFD] font-opensans animate-in fade-in duration-700">
-      <div className="pt-30">
-        <HolidaySearch isDetailsPage={true} persons={persons} setPersons={setPersons} />
+      <div className="pt-30"> 
+        <HolidaySearch 
+        isDetailsPage={true}
+        persons={persons} 
+        setPersons={setPersons}
+        />
       </div>
-
-      {/* --- Main Page Content Section --- */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold text-[#2C4A5E] tracking-tight">{holiday?.title}</h1>
-            <div className="flex items-center gap-3 text-sm font-medium">
-              <span className="text-[#C9A961] font-bold">{holiday?.nights} Nights / {holiday?.days} Days</span>
-              <span className="text-gray-300">|</span>
-              <span className="text-gray-500 italic">{holiday?.included_cities?.join(' • ')}</span>
-            </div>
-          </div>
-          
-          <button 
-            onClick={() => navigator.share ? navigator.share({title: holiday?.title, url: window.location.href}) : navigator.clipboard.writeText(window.location.href)}
-            className="flex items-center gap-2 px-4 py-2 border rounded-full text-xs font-bold hover:bg-gray-50 transition-all text-[#2C4A5E]"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            SHARE
-          </button>
-        </div>
 
         <PackageGallery 
           heroImage={holiday?.hero_image}
@@ -180,17 +171,31 @@ const PackageDetailsPage = () => {
 
       {/* --- Tabs and Detailed Sections --- */}
       <PackageTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-8">
             {activeTab === 'itineraries' && <ItinerarySection days={itineraryData?.days || []} holiday={holiday} summary={summaryData} />}
             {activeTab === 'summary' && <SummarySection days={itineraryData?.days || []} summary={summaryData} />}
             {activeTab === 'policies' && (
-              <div className="p-8 bg-white rounded-[30px] border border-gray-100 shadow-sm">
-                <h3 className="text-xl font-bold text-[#2C4A5E] mb-6 border-b pb-4">Policies & Cancellation</h3>
-                <div className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-6 rounded-2xl border border-dashed" dangerouslySetInnerHTML={{ __html: holiday?.policies || "Standard policies apply." }} />
-              </div>
-            )}
+  <div className="p-8 bg-white rounded-[30px] border border-gray-100 shadow-sm animate-in fade-in duration-500">
+    <h3 className="text-xl font-bold text-[#2C4A5E] mb-6 border-b pb-4">
+      Policies & Cancellation
+    </h3>
+    
+    <div 
+     
+      className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-6 rounded-2xl border border-dashed overflow-hidden wrap-break-word"
+      style={{ 
+        wordBreak: 'break-word', 
+        overflowWrap: 'anywhere' 
+      }}
+      dangerouslySetInnerHTML={{ 
+        __html: holiday?.policies || "Standard policies apply." 
+      }} 
+    />
+  </div>
+)}
           </div>
           <div className="lg:col-span-4">
             <PricingSidebar priceData={priceData || holiday?.price} calculatedSummary={summaryData} defaultOption={userPreference} persons={persons} />
