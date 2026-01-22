@@ -20,6 +20,8 @@ const PackageDetailsPage = () => {
   const [searchParams] = useSearchParams();
   const [persons, setPersons] = useState(Number(searchParams.get("persons")) || 1);
   const location = useLocation();
+  const [city, setCity] = useState(searchParams.get("city") || "");
+  const [date, setDate] = useState(searchParams.get("departureDate") || "");
 
 
   const userPreference = location.state?.type || 'flight';
@@ -82,12 +84,12 @@ const PackageDetailsPage = () => {
   if (loading) return (
     <div className="h-screen w-full flex flex-col items-center justify-center gap-4 bg-white">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#C9A961]"></div>
-      <p className="text-[#5A5550] font-bold tracking-widest uppercase text-[10px]">Syncing Luxury Experience...</p>
+      <p className="text-[#5A5550] font-bold tracking-widest uppercase text-[18px] font-opensans">Syncing Luxury Experience...</p>
     </div>
   );
 
   if (!itineraryData) return (
-    <div className="h-screen w-full flex items-center justify-center bg-white font-bold text-gray-400 text-center p-6">
+    <div className="h-screen w-full flex items-center justify-center bg-white font-bold text-gray-400 text-center p-6 text-[18px] font-opensans">
       Package details currently unavailable.
     </div>
   );
@@ -95,12 +97,14 @@ const PackageDetailsPage = () => {
   const holiday = itineraryData.holidayPackage;
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] font-opensans animate-in fade-in duration-700">
+    <div className="min-h-screen bg-[#FDFDFD] font-opensans text-[18px] animate-in fade-in duration-700">
       <div className="pt-30"> 
         <HolidaySearch 
         isDetailsPage={true}
         persons={persons} 
         setPersons={setPersons}
+        initialCity={city}   
+        initialDate={date}
         />
       </div>
 
@@ -120,7 +124,7 @@ const PackageDetailsPage = () => {
       
       <PackageTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="max-w-[1340px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           
           <div className="lg:col-span-8">
@@ -140,24 +144,23 @@ const PackageDetailsPage = () => {
             )}
             
             {activeTab === 'policies' && (
-  <div className="p-8 bg-white rounded-[30px] border border-gray-100 shadow-sm animate-in fade-in duration-500">
-    <h3 className="text-xl font-bold text-[#2C4A5E] mb-6 border-b pb-4">
-      Policies & Cancellation
-    </h3>
-    
-    <div 
-     
-      className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-6 rounded-2xl border border-dashed overflow-hidden wrap-break-word"
-      style={{ 
-        wordBreak: 'break-word', 
-        overflowWrap: 'anywhere' 
-      }}
-      dangerouslySetInnerHTML={{ 
-        __html: holiday?.policies || "Standard policies apply." 
-      }} 
-    />
-  </div>
-)}
+              <div className="p-8 bg-white rounded-[30px] border border-gray-100 shadow-sm animate-in fade-in duration-500">
+                <h3 className="text-xl font-bold text-[#2C4A5E] mb-6 border-b pb-4 font-opensans">
+                  Policies & Cancellation
+                </h3>
+                
+                <div 
+                  className="text-[18px] font-opensans text-gray-600 leading-relaxed bg-gray-50 p-6 rounded-2xl border border-dashed overflow-hidden wrap-break-word"
+                  style={{ 
+                    wordBreak: 'break-word', 
+                    overflowWrap: 'anywhere' 
+                  }}
+                  dangerouslySetInnerHTML={{ 
+                    __html: holiday?.policies || "Standard policies apply." 
+                  }} 
+                />
+              </div>
+            )}
           </div>
 
           <div className="lg:col-span-4">

@@ -19,6 +19,9 @@ import HolidayPackages from "./pages/HolidayPackages/pages/HolidayPackages";
 import PackageDetailsPage from "./pages/HolidayPackages/pages/PackageDetailsPage";
 import PackageBookingPage from "./pages/HolidayPackages/pages/PackageBookingPage";
 import WriteBrandReview from "./components/ui/WriteBrandReview";
+import EventsPage from "./pages/Events/Events";
+import EventVenuesPage from "./pages/Events/EventVenuesPage";
+
 
 // --- AUTH OBSERVER COMPONENT ---
 // --- AUTH OBSERVER COMPONENT (FIXED) ---
@@ -27,7 +30,7 @@ const AuthObserver = () => {
 
   useEffect(() => {
     const unsubscribe = onIdTokenChanged(auth, async (user) => {
-      if (user) {
+      if (user) { 
        
         
         try {
@@ -98,6 +101,12 @@ const App: React.FC = () => {
         <Route path="/holiday-packages" element={<HolidayPackages />} />
         <Route path="/package-detail/:id" element={<PackageDetailsPage />} />
         <Route path="/package-booking" element={<PackageBookingPage />} />
+
+
+        <Route path="/events" element={<EventsPage />} />
+        <Route path="/event-venues/:id" element={<EventVenuesPage />} />
+
+
 
         <Route path='/about' element={<AboutPage />} />
         <Route path='/privacy-policy' element={<PrivacyPolicy />} />

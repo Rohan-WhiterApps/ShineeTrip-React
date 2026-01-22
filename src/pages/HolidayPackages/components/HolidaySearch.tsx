@@ -7,16 +7,30 @@ interface HolidaySearchProps {
   isDetailsPage?: boolean;
   persons?: number; 
   setPersons?: (count: number) => void;
+  initialCity?: string;
+  initialDate?: string;
 }
 
-export const HolidaySearch = ({ isDetailsPage = false , persons = 1 , setPersons = () => {} }: HolidaySearchProps) => {
+export const HolidaySearch = ({ 
+  isDetailsPage = false, 
+  persons = 1, 
+  setPersons = () => {}, 
+  initialCity = "", 
+  initialDate = "" 
+}: HolidaySearchProps) => {
+
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   
   // States sync with URL
-  const [city, setCity] = useState(searchParams.get("city") || "");
-  const [date, setDate] = useState(searchParams.get("departureDate") || "");
+  const [city, setCity] = useState(initialCity || searchParams.get("city") || "");
+  const [date, setDate] = useState(initialDate || searchParams.get("departureDate") || "");
+
+  useEffect(() => {
+    if (initialCity) setCity(initialCity);
+    if (initialDate) setDate(initialDate);
+  }, [initialCity, initialDate]);
   
 
   // --- AUTOCOMPLETE STATES ---
@@ -59,6 +73,7 @@ export const HolidaySearch = ({ isDetailsPage = false , persons = 1 , setPersons
       setFilteredCities([]);
     }
   }, [city, availableCities]);
+  
 
   // 3. Click Outside logic
   useEffect(() => {
@@ -79,30 +94,26 @@ export const HolidaySearch = ({ isDetailsPage = false , persons = 1 , setPersons
       return;
     }
 
-
     const params: any = {
       page: "1",
       limit: "10"
     };
 
     if (city.trim()) params.city = city.trim();
-    
-    
     if (date) params.departureDate = date;
     params.persons = persons.toString();
 
- 
     setSearchParams(params);
     setShowSuggestions(false);
   };
 
   return (
     <>
-      <div className={`w-full transition-all duration-300 ${
-        isDetailsPage ? "bg-white py-4" : "-mt-10 relative z-50"
+      <div className={`w-full transition-all duration-300 font-opensans ${
+        isDetailsPage ? "bg-white py-6" : "-mt-10 relative z-50"
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[#e9e9e9] rounded-full shadow-xl flex items-center p-1 border border-gray-100 relative">
+          <div className="bg-[#e9e9e9] rounded-full shadow-xl flex items-center p-4 border border-gray-100 relative">
             
             {/* DESTINATION SECTION with Autocomplete */}
             <div className="flex-1 flex items-center gap-3 px-6 border-r border-gray-300 relative" ref={wrapperRef}>
@@ -110,21 +121,24 @@ export const HolidaySearch = ({ isDetailsPage = false , persons = 1 , setPersons
                 <MapPin size={18} className="text-[#C9A961]" />
               </div>
               <div className="flex flex-col flex-1 min-w-0">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Destination</span>
+                {/* Changed font size to 18px and font-opensans */}
+                <span className="text-[18px] font-opensans font-bold text-gray-400 uppercase tracking-tight">Destination</span>
                 <input 
                   type="text" 
                   value={city}
                   onFocus={() => setShowSuggestions(true)}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="Where to?" 
-                  className="text-sm font-bold text-gray-800 focus:outline-none bg-transparent w-full"
+                  // Changed font size to 18px and font-opensans
+                  className="text-[18px] font-opensans font-bold text-gray-800 focus:outline-none bg-transparent w-full"
                 />
               </div>
 
               {/* Suggestions Dropdown */}
               {showSuggestions && filteredCities.length > 0 && (
                 <div className="absolute top-full left-0 mt-4 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="px-4 py-2 bg-gray-50 text-[9px] font-bold text-[#C9A961] uppercase border-b border-gray-100">
+                  {/* Changed font size to 18px and font-opensans */}
+                  <div className="px-4 py-2 bg-gray-50 text-[18px] font-opensans font-bold text-[#C9A961] uppercase border-b border-gray-100">
                     Suggested Destintations
                   </div>
                   <ul className="max-h-60 overflow-y-auto">
@@ -138,7 +152,8 @@ export const HolidaySearch = ({ isDetailsPage = false , persons = 1 , setPersons
                         className="flex items-center gap-3 px-4 py-3 hover:bg-orange-50 cursor-pointer transition-colors border-b border-gray-50 last:border-0"
                       >
                         <MapPin size={14} className="text-gray-400" />
-                        <span className="text-sm font-bold text-gray-700">{item}</span>
+                        {/* Changed font size to 18px and font-opensans */}
+                        <span className="text-[18px] font-opensans font-bold text-gray-700">{item}</span>
                       </li>
                     ))}
                   </ul>
@@ -152,36 +167,41 @@ export const HolidaySearch = ({ isDetailsPage = false , persons = 1 , setPersons
                 <Calendar size={18} className="text-[#C9A961]" />
               </div>
               <div className="flex flex-col flex-1">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Departure</span>
+                {/* Changed font size to 18px and font-opensans */}
+                <span className="text-[18px] font-opensans font-bold text-gray-400 uppercase tracking-tight">Departure</span>
                 <input 
                   type="date" 
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="text-sm font-bold text-gray-800 focus:outline-none bg-transparent w-full [color-scheme:light]"
+                  // Changed font size to 18px and font-opensans
+                  className="text-[18px] font-opensans font-bold text-gray-800 focus:outline-none bg-transparent w-full [color-scheme:light]"
                 />
               </div>
             </div>
 
             {/* PERSONS SECTION */}
             <div className="flex-1 flex items-center gap-3 px-6 hidden lg:flex min-w-[180px]">
-            <div className="p-2 bg-orange-50 rounded-lg shrink-0">
-              <Users size={18} className="text-[#C9A961]" />
-            </div>
-            <div className="flex flex-col flex-1">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">Number of Persons</span>
-              <div className="flex items-center gap-4 mt-0.5">
-                <button 
-                  onClick={() => persons > 1 && setPersons(persons - 1)}
-                  className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 text-gray-500 hover:bg-gray-100 transition-colors"
-                >—</button>
-                <span className="text-sm font-black text-gray-800 w-4 text-center">{persons}</span>
-                <button 
-                  onClick={() => setPersons(persons + 1)}
-                  className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 text-gray-500 hover:bg-gray-100 transition-colors"
-                >+</button>
+              <div className="p-2 bg-orange-50 rounded-lg shrink-0">
+                <Users size={18} className="text-[#C9A961]" />
+              </div>
+              <div className="flex flex-col flex-1">
+                {/* Changed font size to 18px and font-opensans */}
+                <span className="text-[18px] font-opensans font-bold text-gray-400 uppercase tracking-tight">Number of Persons</span>
+                <div className="flex items-center gap-4 mt-0.5">
+                  <button 
+                    onClick={() => persons > 1 && setPersons(persons - 1)}
+                    className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 text-gray-500 hover:bg-gray-100 transition-colors"
+                  >—</button>
+                  {/* Changed font size to 18px and font-opensans */}
+                  <span className="text-[18px] font-opensans font-black text-gray-800 w-4 text-center">{persons}</span>
+                  <button 
+                    onClick={() => setPersons(persons + 1)}
+                    className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-300 text-gray-500 hover:bg-gray-100 transition-colors"
+                  >+</button>
+                </div>
               </div>
             </div>
-          </div>
+
             {/* SEARCH BUTTON */}
             <div className="p-1">
               <button 

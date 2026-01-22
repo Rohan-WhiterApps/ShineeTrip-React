@@ -70,17 +70,20 @@ export const SummarySection = ({ days, summary }: SummarySectionProps) => {
   const totalMeals = summary?.days?.reduce((sum: number, day: any) => sum + (day.meals || 0), 0);
 
   return (
-    <div className="animate-in fade-in duration-500">
+    <div className="animate-in fade-in duration-500 font-opensans">
       
       {/* 1. Top Filter Chips */}
       <div className="flex flex-wrap gap-3 mb-8">
-        <span className="bg-[#F3F3F3] text-[#444] px-5 py-2.5 rounded-full text-[11px] font-bold tracking-wider uppercase">
+        {/* Updated: text-[11px] -> text-[18px] and added font-opensans */}
+        <span className="bg-[#F3F3F3] text-[#444] px-5 py-2.5 rounded-full text-[18px] font-opensans font-bold tracking-wider uppercase">
           {summary?.totalDays || days.length} DAY PLAN
         </span>
-        <span className="bg-[#F3F3F3] text-[#444] px-5 py-2.5 rounded-full text-[11px] font-bold tracking-wider uppercase">
+        {/* Updated: text-[11px] -> text-[18px] and added font-opensans */}
+        <span className="bg-[#F3F3F3] text-[#444] px-5 py-2.5 rounded-full text-[18px] font-opensans font-bold tracking-wider uppercase">
           {totalActivities || 0} ACTIVITIES INCLUDED
         </span>
-        <span className="bg-[#F3F3F3] text-[#444] px-5 py-2.5 rounded-full text-[11px] font-bold tracking-wider uppercase">
+        {/* Updated: text-[11px] -> text-[18px] and added font-opensans */}
+        <span className="bg-[#F3F3F3] text-[#444] px-5 py-2.5 rounded-full text-[18px] font-opensans font-bold tracking-wider uppercase">
           {totalMeals || 0} MEALS PLANNED
         </span>
       </div>
@@ -92,14 +95,17 @@ export const SummarySection = ({ days, summary }: SummarySectionProps) => {
         ))
       ) : (
         <div className="py-20 text-center bg-white rounded-[30px] border-2 border-dashed border-gray-100">
-          <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No Summary Data Available</p>
+          {/* Updated: text-xs -> text-[18px] and added font-opensans */}
+          <p className="text-gray-400 font-bold uppercase tracking-widest text-[18px] font-opensans">No Summary Data Available</p>
         </div>
       )}
 
       {/* 3. Important Note */}
       <div className="bg-orange-50/50 border border-orange-100 p-5 rounded-[25px] mt-6 flex items-start gap-4">
-        <div className="bg-orange-100 p-2 rounded-full text-orange-600 text-[10px] w-6 h-6 flex items-center justify-center">i</div>
-        <p className="text-[11px] text-orange-800 leading-relaxed font-medium">
+        {/* Updated: text-[10px] -> text-[18px] and added font-opensans */}
+        <div className="bg-orange-100 p-2 rounded-full text-orange-600 text-[18px] font-opensans w-8 h-8 flex items-center justify-center font-bold">i</div>
+        {/* Updated: text-[11px] -> text-[18px] and added font-opensans */}
+        <p className="text-[18px] font-opensans text-orange-800 leading-relaxed font-medium">
           <span className="font-bold block mb-1 uppercase tracking-tighter">Booking Information:</span> 
           Your final itinerary total is {summary?.grandTotal ? `₹${summary.grandTotal.toLocaleString('en-IN')}` : 'calculated'} including all taxes, surcharges and listed activities.
         </p>

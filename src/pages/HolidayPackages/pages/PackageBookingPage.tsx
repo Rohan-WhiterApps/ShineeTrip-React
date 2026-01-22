@@ -115,6 +115,7 @@ const PackageBookingPage: React.FC = () => {
                 paymentMethod: "online",
                 currency: "INR",
                 customerId: parseInt(customerId)
+                
             };
             console.log("Order Payload:", orderPayload.totalPrice);
 
@@ -316,7 +317,7 @@ if (isBookingSuccessful && completeOrderData) {
                                         onChange={(e) => setFormData({...formData, agreePolicy: e.target.checked})}
                                     />
                                     <label className="text-[11px] text-blue-900 font-medium leading-relaxed">
-                                        I confirm that the traveler names match their government ID. I also agree to the <span className="underline font-bold">Terms of Service</span> and <span className="underline font-bold">Cancellation Policy</span>.
+                                        I confirm that the traveler names match their government ID. I also agree to the <span className="">Terms of Service</span> and <span className="">Cancellation Policy</span>.
                                     </label>
                                 </div>
 
