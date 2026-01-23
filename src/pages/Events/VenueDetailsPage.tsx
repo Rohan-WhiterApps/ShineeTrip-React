@@ -49,7 +49,8 @@ const VenueDetailsPage = () => {
         const response = await fetch(`${API_BASE_URL}/event-venue/${id}`, { headers });
         if (!response.ok) throw new Error("Failed to fetch");
         
-        const data = await response.json();
+          const data = await response.json();
+          console.log(data); 
         setVenue(data);
       } catch (error) {
         console.error("Error:", error);
@@ -83,183 +84,174 @@ const VenueDetailsPage = () => {
   const galleryImages = [venue.cover_img, ...(venue.images || [])].slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-[#F2F2F2] font-opensans pb-20 pt-24 px-4 sm:px-6 lg:px-8">
-      
-      {/* --- BACK BUTTON --- */}
-      <div className="max-w-7xl mx-auto mb-6">
-        <button 
-            onClick={() => navigate(-1)}
-            className="flex items-center text-gray-500 hover:text-[#CA9C43] transition-colors font-medium"
-        >
-            <ArrowLeft size={20} className="mr-2" />
-            Back to venues
-        </button>
-      </div>
+  <div className="min-h-screen bg-[#ECECEC] font-opensans pt-35 pb-20 ">
+    {/* Back */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5">
+      <button
+        onClick={() => navigate(-1)}
+        className="flex items-center text-gray-600 hover:text-gray-900 transition-colors font-medium"
+      >
+        <ArrowLeft size={18} className="mr-2 mt-2" />
+        Back to venues
+      </button>
+    </div>
 
-      {/* --- MAIN CARD --- */}
-      <div className="max-w-7xl mx-auto bg-white rounded-[2rem] shadow-sm p-6 md:p-8">
-        
-        {/* HEADER */}
-        <div className="mb-6">
-            <h1 className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-2">{venue.name}</h1>
-            <div className="flex items-center text-gray-600 gap-4">
-                <div className="flex items-center">
-                    <MapPin size={18} className="mr-1 text-gray-400" />
-                    <span>{venue.location}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                    <Star size={16} className="text-[#D2A256] fill-current" />
-                    <span className="font-bold text-gray-800">4.8</span>
-                    <span className="text-gray-400 text-sm">(156 reviews)</span>
-                </div>
+    {/* Main wrapper card */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="px-6 sm:px-8 pt-7 pb-5 border-b border-gray-100">
+          <h1 className="text-3xl font-extrabold text-gray-900">{venue.name}</h1>
+
+          <div className="mt-2 flex items-center gap-6 text-sm text-gray-600">
+            <div className="flex items-center">
+              <MapPin size={16} className="mr-1 text-gray-400" />
+              <span>{venue.location}</span>
             </div>
+
+            <div className="flex items-center gap-1">
+              <Star size={14} className="text-[#D2A256] fill-current" />
+              <span className="font-bold text-gray-800">4.8</span>
+              <span className="text-gray-400">(156 reviews)</span>
+            </div>
+          </div>
         </div>
 
-        {/* --- IMAGE GALLERY (Grid Layout) --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-10 h-[500px] md:h-[400px]">
-            {/* Main Large Image */}
-            <div className="lg:col-span-2 h-full">
-                <img 
-                    src={galleryImages[0]} 
-                    alt="Main View" 
-                    className="w-full h-full object-cover rounded-2xl cursor-pointer hover:opacity-95 transition-opacity"
+        {/* Gallery */}
+        <div className="px-6 sm:px-8 pt-6 pb-7">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            {/* Big image */}
+            <div className="lg:col-span-9">
+              <div className="h-[320px] sm:h-[360px] lg:h-[360px] rounded-xl overflow-hidden border border-gray-200">
+                <img
+                  src={galleryImages[0]}
+                  alt="Main"
+                  className="w-full h-full object-cover"
                 />
+              </div>
             </div>
-            
-            {/* Side Images Stack */}
-            <div className="hidden lg:grid grid-rows-3 gap-4 h-full">
-                {galleryImages.slice(1).map((img, idx) => (
-                    <div key={idx} className="relative overflow-hidden rounded-2xl h-full">
-                        <img 
-                            src={img} 
-                            alt={`Gallery ${idx}`} 
-                            className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
-                        />
-                         {idx === 2 && galleryImages.length > 4 && (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-lg">
-                                +{venue.images.length - 3} More
-                            </div>
-                        )}
-                    </div>
-                ))}
+
+            {/* Right stack */}
+            <div className="hidden lg:flex lg:col-span-3 flex-col gap-4">
+              {galleryImages.slice(1, 4).map((img, idx) => (
+                <div
+                  key={idx}
+                  className="h-[108px] rounded-xl overflow-hidden border border-gray-200"
+                >
+                  <img src={img} alt={`Side ${idx}`} className="w-full h-full object-cover" />
+                </div>
+              ))}
             </div>
+          </div>
         </div>
 
-        {/* --- CONTENT GRID --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            {/* LEFT COLUMN (Details) */}
-            <div className="lg:col-span-2 space-y-6">
-                
-                {/* Key Details Card */}
-                <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
-                    <h2 className="text-xl font-bold text-[#1A1A1A] mb-6">Key Details</h2>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
-                        {/* Guest Capacity */}
-                        <div>
-                            <p className="text-gray-500 text-sm mb-1">Guest Capacity</p>
-                            <div className="flex items-center gap-2 font-bold text-[#1A1A1A] text-lg">
-                                <Users className="text-gray-400" size={20} />
-                                {venue.min_guest_capacity}-{venue.max_guest_capacity} guests
-                            </div>
-                        </div>
+        {/* Content grid (left + right) */}
+        <div className="px-6 sm:px-8 pb-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* LEFT */}
+            <div className="lg:col-span-8 space-y-6">
+              {/* Key Details */}
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                <h2 className="text-base font-bold text-gray-900 mb-4">Key Details</h2>
 
-                        {/* Venue Type */}
-                        <div>
-                            <p className="text-gray-500 text-sm mb-1">Venue Type</p>
-                            <div className="font-bold text-[#1A1A1A] text-lg">
-                                {venue.venue_type}
-                            </div>
-                        </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Guest Capacity</p>
+                    <p className="text-sm font-bold text-gray-900">
+                      {venue.min_guest_capacity}-{venue.max_guest_capacity} guests
+                    </p>
+                  </div>
 
-                        {/* Suitability (Tags) */}
-                        <div>
-                            <p className="text-gray-500 text-sm mb-2">Event Suitability</p>
-                            <div className="flex flex-wrap gap-2">
-                                {tags.length > 0 ? tags.map((tag, i) => (
-                                    <span key={i} className="px-3 py-1 bg-gray-100 rounded-full text-sm font-medium text-gray-600">
-                                        {tag}
-                                    </span>
-                                )) : <span className="text-gray-400 text-sm">General Events</span>}
-                            </div>
-                        </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Venue Type</p>
+                    <p className="text-sm font-bold text-gray-900">{venue.venue_type}</p>
+                  </div>
 
-                         {/* Budget Range */}
-                         <div>
-                            <p className="text-gray-500 text-sm mb-1">Budget Range</p>
-                            <div className="font-bold text-[#1A1A1A] text-lg">
-                                {venue.budget_range || "Flexible"}
-                            </div>
-                        </div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-2">Event Suitability</p>
+                    <div className="flex flex-wrap gap-2">
+                      {tags.length > 0 ? (
+                        tags.map((tag, i) => (
+                          <span
+                            key={i}
+                            className="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold"
+                          >
+                            {tag}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-gray-400 text-xs">General Events</span>
+                      )}
                     </div>
-                </div>
+                  </div>
 
-                {/* Amenities Card */}
-                <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
-                     <h2 className="text-xl font-bold text-[#1A1A1A] mb-6">Amenities</h2>
-                     
-                     <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
-                        {venue.amenities.length > 0 ? venue.amenities.map((amenity) => (
-                             <div key={amenity.id} className="flex items-center gap-3 bg-gray-50 p-4 rounded-xl">
-                                {/* Use API Image if available, else fallback icon */}
-                                {amenity.img_link ? (
-                                    <img src={amenity.img_link} alt={amenity.name} className="w-6 h-6" />
-                                ) : (
-                                    <CheckCircle className="text-[#CA9C43]" size={20} />
-                                )}
-                                <span className="font-medium text-gray-700">{amenity.name}</span>
-                             </div>
-                        )) : (
-                            <div className="text-gray-400 italic">Amenities details available on request</div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Budget Range</p>
+                    <p className="text-sm font-bold text-gray-900">{venue.budget_range || "Flexible"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Amenities */}
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                <h2 className="text-base font-bold text-gray-900 mb-4">Amenities</h2>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {venue.amenities?.length > 0 ? (
+                    venue.amenities.map((amenity) => (
+                      <div
+                        key={amenity.id}
+                        className="bg-gray-50 rounded-xl border border-gray-100 px-4 py-4 flex items-center gap-3"
+                      >
+                        {amenity.img_link ? (
+                          <img src={amenity.img_link} alt={amenity.name} className="w-5 h-5" />
+                        ) : (
+                          <CheckCircle className="text-gray-500" size={18} />
                         )}
-                     </div>
+                        <span className="text-sm font-semibold text-gray-800">{amenity.name}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-gray-400 italic text-sm">Amenities details available on request</div>
+                  )}
                 </div>
+              </div>
 
-                {/* About Venue */}
-                <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
-                    <h2 className="text-xl font-bold text-[#1A1A1A] mb-4">About this venue</h2>
-                    <p className="text-gray-600 leading-relaxed">
-                        {venue.desc}
-                    </p>
-                </div>
-
+              {/* About */}
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                <h2 className="text-base font-bold text-gray-900 mb-3">About this venue</h2>
+                <p className="text-sm text-gray-600 leading-relaxed">{venue.desc}</p>
+              </div>
             </div>
 
-            {/* RIGHT COLUMN (Sticky Booking Card) */}
-            <div className="lg:col-span-1">
-                <div className="sticky top-24 bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
-                    <p className="text-gray-500 text-sm mb-1">Starting from</p>
-                    <h3 className="text-4xl font-bold text-[#1A1A1A] mb-6">
-                        {formatPrice(venue.min_price)}
-                    </h3>
+            {/* RIGHT */}
+            <div className="lg:col-span-4">
+              <div className="sticky top-28">
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                  <p className="text-xs text-gray-500 mb-1">Starting from</p>
+                  <p className="text-2xl font-extrabold text-gray-900 mb-5">{formatPrice(venue.min_price)}</p>
 
-                    <button 
-                        className="w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
-                        style={{
-                            background: 'linear-gradient(90deg, #CA9C43 0%, #916E2B 100%)',
-                        }}
-                        onClick={() => {
-                            if (venue) {
-            navigate(`/event-enquiry/${venue.id}`);
-        }
-                            console.log("Proceed with booking for venue:", venue.id);
-                        }}
-                    >
-                        Proceed with this venue
-                    </button>
+                  <button
+                    className="w-full rounded-xl py-3.5 font-bold text-white shadow-sm hover:opacity-95 transition"
+                    style={{ background: "linear-gradient(180deg, #C9A961 0%, #9B7A2F 100%)" }}
+                    onClick={() => venue && navigate(`/event-enquiry/${venue.id}`)}
+                  >
+                    Proceed with this venue
+                  </button>
 
-                    <p className="text-center text-gray-400 text-xs mt-4">
-                        Our team will contact you shortly after submission
-                    </p>
+                  <p className="text-center text-xs text-gray-400 mt-4">
+                    Our team will contact you shortly after submission
+                  </p>
                 </div>
+              </div>
             </div>
-
+          </div>
         </div>
 
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default VenueDetailsPage;

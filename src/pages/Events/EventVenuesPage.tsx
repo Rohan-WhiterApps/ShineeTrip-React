@@ -120,7 +120,7 @@ const EventVenuesPage = () => {
         <div className="container mt-20 mx-auto max-w-6xl">
            <div className="bg-white border border-gray-200 rounded-full shadow-md flex items-center p-2 max-w-4xl mx-auto h-16">
               
-              <div className="flex items-center flex-1 px-4 border-r border-gray-200">
+              <div className="flex items-center flex-1 px-4 border-r border-gray-200 mt-2">
                 <Search className="text-gray-400 w-5 h-5 mr-3" />
                 <input 
                     type="text"
