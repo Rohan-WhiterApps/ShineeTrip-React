@@ -88,7 +88,7 @@ const EventsPage = () => {
           </p>
           
           <button 
-            onClick={() => navigate('/booking')}
+            onClick={() => navigate('/Events')}
             className="px-8 py-3 rounded-full font-semibold text-white transition-transform hover:scale-105 shadow-lg"
             style={{
               background: 'linear-gradient(180.95deg, #AB7E29 0.87%, #EFD08D 217.04%)',
