@@ -21,6 +21,8 @@ export const NewSearch = ({
   packageDuration = 0 // Default 0
 }: NewSearchProps) => {
 
+  const dateRef = useRef<HTMLInputElement>(null);
+
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showLoginPopup, setShowLoginPopup] = useState(false);
@@ -173,26 +175,40 @@ export const NewSearch = ({
             <div className="w-[1px] h-8 bg-gray-300 hidden md:block"></div>
 
             {/* DATE SECTION (With Range Logic) */}
-            <div className="flex-1 flex items-center gap-3 px-5 hidden md:flex relative group cursor-pointer">
-              <div className="shrink-0">
-                <Calendar size={20} className="text-[#C9A961]" />
-              </div>
-              <div className="flex flex-col flex-1 justify-center relative">
+         <div
+  className="flex-1 flex items-center gap-3 px-5 hidden md:flex relative group cursor-pointer"
+  onClick={() => {
+    const el = dateRef.current;
+    if (!el) return;
+    // @ts-ignore
+    if (typeof el.showPicker === "function") el.showPicker();
+    else el.focus();
+  }}
+>
+  <div className="shrink-0">
+    <Calendar size={20} className="text-[#C9A961]" />
+  </div>
 
-                {/* 1. VISUAL TEXT (Dikhega ye: "1 Feb - 8 Feb") */}
-                <span className={`text-[15px] font-opensans font-bold ${date ? 'text-gray-800' : 'text-gray-400 font-normal'}`}>
-                  {getFormattedDateRange()}
-                </span>
+  <div className="flex flex-col flex-1 justify-center relative">
+    {/* Visible text */}
+    <span
+      className={`text-[15px] font-opensans font-bold ${
+        date ? "text-gray-800" : "text-gray-400 font-normal"
+      }`}
+    >
+      {getFormattedDateRange()}
+    </span>
 
-                {/* 2. HIDDEN INPUT (Kaam ye karega: Click karne pe calendar khulega) */}
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                />
-              </div>
-            </div>
+    {/* Hidden input */}
+    <input
+      ref={dateRef}
+      type="date"
+      value={date}
+      onChange={(e) => setDate(e.target.value)}
+      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:hidden"
+    />
+  </div>
+</div>
 
             {/* Vertical Separator */}
             <div className="w-[1px] h-8 bg-gray-300 hidden lg:block"></div>

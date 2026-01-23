@@ -107,7 +107,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Stay Connected */}
+        {/*
         <div className="mb-8">
           <h3 className="text-white font-semibold mb-2 text-xs tracking-wide">
             STAY CONNECTED
@@ -133,8 +133,8 @@ export default function Footer() {
               <Mail size={18} className="text-white" />
             </button>
           </div>
-        </div>
-      </div>
+        </div> */ } 
+      </div> 
 
       {/* Bottom Footer */}
       <div className="border-t border-gray-400 py-4">

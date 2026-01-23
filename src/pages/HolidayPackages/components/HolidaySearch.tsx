@@ -19,6 +19,8 @@ export const HolidaySearch = ({
   initialDate = ""
 }: HolidaySearchProps) => {
 
+  const departureRef = useRef<HTMLInputElement>(null);
+
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showLoginPopup, setShowLoginPopup] = useState(false);
@@ -162,18 +164,32 @@ export const HolidaySearch = ({
 
             {/* DATE SECTION */}
             <div className="flex-1 flex items-center gap-3 px-6 border-r border-gray-300 hidden md:flex">
-              <div className="p-2 bg-orange-50 rounded-lg shrink-0">
-                <Calendar size={18} className="text-[#C9A961]" />
-              </div>
+             <div className="p-2 bg-orange-50 rounded-lg shrink-0">
+  <button
+    type="button"
+    onClick={() => {
+      const el = departureRef.current;
+      if (!el) return;
+      // @ts-ignore
+      if (typeof el.showPicker === "function") el.showPicker();
+      else el.focus();
+    }}
+    aria-label="Open calendar"
+    className="block"
+  >
+    <Calendar size={18} className="text-[#C9A961]" />
+  </button>
+</div>
               <div className="flex flex-col flex-1">
                 {/* Changed font size to 18px and font-opensans */}
                 <span className="text-[18px] font-opensans font-bold text-gray-400 uppercase tracking-tight">Departure</span>
-                <input
+               <input
+  ref={departureRef}
   type="date"
   value={date}
   onChange={(e) => setDate(e.target.value)}
-  className="text-[18px] font-opensans font-bold text-gray-800 focus:outline-none bg-transparent w-full [color-scheme:light] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:cursor-pointer"
- />
+  className="text-[18px] font-opensans font-bold text-gray-800 focus:outline-none bg-transparent w-full [color-scheme:light] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:hidden"
+/>
               </div>
             </div>
 
