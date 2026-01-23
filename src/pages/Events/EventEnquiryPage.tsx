@@ -82,11 +82,11 @@ const EventEnquiryPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#EAEAEA] font-opensans py-10 px-4 pt-24">
+    <div className="min-h-screen bg-[#EAEAEA] font-opensans py-10 px-4 pt-34 ">
       
       {/* --- STEPPER (Top Header) --- */}
       <div className="max-w-3xl mx-auto mt-10 mb-10">
-        <div className="flex justify-center items-center gap-4 text-sm font-medium text-gray-500">
+        <div className="flex justify-center items-center gap-4 text-[20px] mb-15 font-medium text-gray-500">
             
             {/* Step 1: Done */}
             <div className="flex flex-col items-center gap-1">
