@@ -169,12 +169,11 @@ export const HolidaySearch = ({
                 {/* Changed font size to 18px and font-opensans */}
                 <span className="text-[18px] font-opensans font-bold text-gray-400 uppercase tracking-tight">Departure</span>
                 <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  // Changed font size to 18px and font-opensans
-                  className="text-[18px] font-opensans font-bold text-gray-800 focus:outline-none bg-transparent w-full [color-scheme:light]"
-                />
+  type="date"
+  value={date}
+  onChange={(e) => setDate(e.target.value)}
+  className="text-[18px] font-opensans font-bold text-gray-800 focus:outline-none bg-transparent w-full [color-scheme:light] [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+ />
               </div>
             </div>
 
