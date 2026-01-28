@@ -160,8 +160,8 @@ const OrgEventDetailsPage = () => {
                     <MapPin className="text-[#CA9C43] mt-1 flex-shrink-0" size={20} />
                     <span className="font-medium leading-relaxed">{event.addr}</span>
                 </div>
-                <div className="w-full h-48 bg-gray-200 rounded-2xl overflow-hidden border border-gray-300 relative">
-        <iframe
+                <div className="w-full h-90 bg-gray-200 rounded-2xl overflow-hidden border border-gray-300 relative">
+      <iframe
   key={`${event.lat}-${event.long}`}
   title="map"
   className="w-full h-full rounded-2xl border-0"
@@ -175,7 +175,7 @@ const OrgEventDetailsPage = () => {
     Number(event.long) + 0.01
   },${
     Number(event.lat) + 0.01
-  }&layer=mapnik&marker=${Number(event.lat)},${Number(event.long)}&zoom=15`}
+  }&layer=mapnik&marker=${Number(event.lat)},${Number(event.long)}`}
 />
                     <div className="absolute inset-0 flex items-center justify-center">
                         <div className="bg-white p-2 rounded-full shadow-lg">
