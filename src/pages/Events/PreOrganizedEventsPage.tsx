@@ -395,7 +395,7 @@ const OrgEventCard = ({ event }: { event: OrgEvent }) => {
   };
 
   return (
-    <div className="bg-white p-3 rounded-[2rem] shadow hover:shadow-xl">
+    <div className="bg-white p-3 rounded-[2rem] shadow hover:shadow-xl relative h-[320px] flex flex-col">
       <div className="relative h-48 rounded-[1.5rem] overflow-hidden">
         <img src={event.cover_img} className="w-full h-full object-cover" />
         <button className="absolute top-3 right-3 p-2 bg-white/90 rounded-full">
@@ -403,7 +403,7 @@ const OrgEventCard = ({ event }: { event: OrgEvent }) => {
         </button>
       </div>
 
-      <div className="flex mt-4 gap-4 px-2">
+      <div className="flex mt-4 gap-4 px-2 flex-1">
         <div className="flex flex-col items-center">
           <span className="text-blue-600 font-semibold text-sm">
             {date.toLocaleString("default", { month: "short" }).toUpperCase()}
@@ -412,8 +412,8 @@ const OrgEventCard = ({ event }: { event: OrgEvent }) => {
         </div>
 
         <div className="flex-1">
-          <h3 className="font-bold text-lg">{event.title}</h3>
-          <p className="text-xs text-gray-500">{event.addr}</p>
+          <h3 className="font-bold text-lg line-clamp-2">{event.title}</h3>
+          <p className="text-xs text-gray-500 line-clamp-2">{event.addr}</p>
           <div className="flex items-center gap-3 text-sm mt-2">
   <div className="flex items-center gap-1 font-semibold">
     <Ticket size={14} className="-rotate-45" />
@@ -430,7 +430,7 @@ const OrgEventCard = ({ event }: { event: OrgEvent }) => {
 
       <button
         onClick={() => navigate(`/org-event-detail/${event.id}`)}
-        className="mt-5 w-full py-3 rounded-xl text-white font-bold"
+       className="mt-5 w-full h-[48px] rounded-xl text-white font-bold flex items-center justify-center"
         style={{
           background: "linear-gradient(90deg,#B58D3F,#916E2B)",
         }}
