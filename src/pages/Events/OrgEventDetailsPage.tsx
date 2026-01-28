@@ -156,10 +156,12 @@ const OrgEventDetailsPage = () => {
             {/* Location & Map */}
             <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-4">Location</h3>
-                <div className="flex items-start gap-3 text-gray-600 mb-4">
-                    <MapPin className="text-[#CA9C43] mt-1 flex-shrink-0" size={20} />
-                    <span className="font-medium leading-relaxed">{event.addr}</span>
-                </div>
+                <div className="flex items-start gap-3 text-black mb-4">
+  <MapPin className="text-black mt-1 flex-shrink-0" size={20} />
+  <span className="font-medium leading-relaxed w-[calc(100%-32px)] break-words">
+    {event.addr}
+  </span>
+</div>
                 <div className="w-full h-90 bg-gray-200 rounded-2xl overflow-hidden border border-gray-300 relative">
       <iframe
   key={`${event.lat}-${event.long}`}
