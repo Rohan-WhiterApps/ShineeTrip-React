@@ -72,7 +72,6 @@ const formatDayAndDate = (dateStr?: string) => {
     }
 };
 
-
 const formatShortDate = (dateStr?: string) => {
     if (!dateStr) return 'N/A';
     try {
@@ -80,6 +79,18 @@ const formatShortDate = (dateStr?: string) => {
     } catch {
         return dateStr;
     }
+};
+
+// Helper to get event date from various possible fields (booking or event)
+const getEventDate = (booking: any) => {
+  return (
+    booking?.event?.date_time ||
+    booking?.event?.date ||
+    booking?.event?.event_date ||
+    booking?.event_date ||
+    booking?.eventDate ||
+    null
+  );
 };
 
 
@@ -448,7 +459,13 @@ const filterEventBookings = (events: any[], filter: string) => {
   const now = new Date();
 
   return events.filter(ev => {
-    const eventDate = new Date(ev.event.date_time);
+    // Support event_date, date, or date_time
+    const rawDate =
+      ev?.event?.date_time ||
+      ev?.event?.date ||
+      ev?.event?.event_date;
+
+    const eventDate = rawDate ? new Date(rawDate) : null;
     const status = ev.status.toLowerCase();
 
     if (filter === 'all') return true;
@@ -458,11 +475,11 @@ const filterEventBookings = (events: any[], filter: string) => {
     }
 
     if (filter === 'upcoming') {
-      return eventDate > now && !status.includes('cancel');
+      return eventDate && eventDate > now && !status.includes('cancel');
     }
 
     if (filter === 'expired') {
-      return eventDate < now || status.includes('expired');
+      return !eventDate || eventDate < now || status.includes('expired');
     }
 
     return true;
@@ -853,7 +870,7 @@ const filteredEventOrders = useMemo(() => {
             <div className="flex items-center gap-2 mb-4">
               <BookingStatusPill status={eventBooking.status} />
               <span className="text-gray-400 text-sm">
-                • {formatDayAndDate(event.date_time)}
+                • {formatDayAndDate(getEventDate(eventBooking))}
               </span>
             </div>
 
@@ -1063,7 +1080,7 @@ const EventDetailModal = ({
                 Event Date
               </p>
               <p className="text-sm font-black text-gray-800 mt-1">
-                {formatDayAndDate(event?.date_time)}
+                {formatDayAndDate(getEventDate(booking))}
               </p>
             </div>
 
