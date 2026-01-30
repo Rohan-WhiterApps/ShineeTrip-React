@@ -287,6 +287,121 @@ const BookingDetailModal = ({ isOpen, onClose, data }: { isOpen: boolean, onClos
 };
 
 
+const RatingModal = ({ 
+    isOpen, 
+    onClose, 
+    propertyId 
+}: { 
+    isOpen: boolean; 
+    onClose: () => void; 
+    propertyId: number | null 
+}) => {
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        overallRating: 5,
+        cleanliness: 5,
+        staff: 5,
+        services: 5,
+        food: 5,
+        summary: '',
+        comment: ''
+    });
+
+    if (!isOpen || !propertyId) return null;
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        const customerId = sessionStorage.getItem('shineetrip_db_customer_id');
+        const token = sessionStorage.getItem('shineetrip_token');
+
+        try {
+            const response = await fetch('http://46.62.160.188:3000/ratings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    ...formData,
+                    propertyId,
+                    customerId: Number(customerId),
+                })
+            });
+
+            if (response.ok) {
+                alert("Review submitted successfully!");
+                onClose();
+            }
+        } catch (error) {
+            console.error("Error posting review:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const StarRating = ({ label, value, name }: { label: string, value: number, name: string }) => (
+        <div className="flex justify-between items-center bg-gray-50 p-3 rounded-xl">
+            <span className="text-xs font-bold text-gray-600 uppercase">{label}</span>
+            <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                        key={star}
+                        size={18}
+                        className={`cursor-pointer transition-colors ${star <= value ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                        onClick={() => setFormData({ ...formData, [name]: star })}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+            <form onSubmit={handleSubmit} className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in duration-200">
+                <div className="bg-[#263238] p-5 text-white flex justify-between items-center">
+                    <h2 className="text-lg font-black uppercase tracking-tight">Rate Your Experience</h2>
+                    <button type="button" onClick={onClose}><XCircle /></button>
+                </div>
+                
+                <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                    <div className="grid grid-cols-1 gap-2">
+                        <StarRating label="Overall Rating" value={formData.overallRating} name="overallRating" />
+                        <StarRating label="Cleanliness" value={formData.cleanliness} name="cleanliness" />
+                        <StarRating label="Staff" value={formData.staff} name="staff" />
+                        <StarRating label="Services" value={formData.services} name="services" />
+                        <StarRating label="Food" value={formData.food} name="food" />
+                    </div>
+
+                    <input 
+                        className="w-full border rounded-xl p-3 text-sm font-medium focus:ring-2 ring-[#D2A256] outline-none" 
+                        placeholder="Short Summary (e.g. Amazing Stay!)"
+                        onChange={(e) => setFormData({...formData, summary: e.target.value})}
+                        required
+                    />
+                    <textarea 
+                        className="w-full border rounded-xl p-3 text-sm font-medium h-24 focus:ring-2 ring-[#D2A256] outline-none" 
+                        placeholder="Tell us more about your stay..."
+                        onChange={(e) => setFormData({...formData, comment: e.target.value})}
+                        required
+                    />
+                </div>
+
+                <div className="p-6 border-t bg-gray-50">
+                    <button 
+                        type="submit" 
+                        disabled={loading}
+                        className="w-full bg-[#D2A256] text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-[#b88d45] disabled:opacity-50"
+                    >
+                        {loading ? 'Submitting...' : 'Post Review'}
+                    </button>
+                </div>
+            </form>
+        </div>
+    );
+};
+
+
 const handleDownloadPDF = (order: Order, room: OrderRoomDetail) => {
     const userName = sessionStorage.getItem('shineetrip_name') || "Guest User";
     const userEmail = sessionStorage.getItem('shineetrip_email') || "Not Provided";
@@ -502,7 +617,10 @@ const MyBookingsPage: React.FC = () => {
     const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
     const [selectedPackageOrder, setSelectedPackageOrder] = useState<any>(null);
     const [isEventModalOpen, setIsEventModalOpen] = useState(false);
-const [selectedEventBooking, setSelectedEventBooking] = useState<any>(null);
+  const [selectedEventBooking, setSelectedEventBooking] = useState<any>(null);
+  
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+const [activePropertyId, setActivePropertyId] = useState<number | null>(null);
 
     // 2. Open function
     const openPackageDetails = (order: any) => {
@@ -786,6 +904,16 @@ const filteredEventOrders = useMemo(() => {
                 >
                   Book Again
                 </button>
+
+                <button
+    onClick={() => {
+        setActivePropertyId(room.property.id);
+        setIsRatingModalOpen(true);
+    }}
+    className="flex-1 border border-[#D2A256] text-[#D2A256] py-2.5 rounded-lg text-xs font-black uppercase hover:bg-yellow-50"
+>
+    Rate Stay
+</button>
               </div>
             </div>
           ))}
@@ -928,6 +1056,7 @@ const filteredEventOrders = useMemo(() => {
                 </div>
             </div>
 
+
             <BookingDetailModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} data={selectedBooking} />
             <PackageDetailModal
                 isOpen={isPackageModalOpen}
@@ -936,13 +1065,19 @@ const filteredEventOrders = useMemo(() => {
             />
 
             <EventDetailModal
-  isOpen={isEventModalOpen}
-  onClose={() => {
-    setIsEventModalOpen(false);
-    setSelectedEventBooking(null);
-  }}
-  booking={selectedEventBooking}
-/>
+              isOpen={isEventModalOpen}
+              onClose={() => {
+                setIsEventModalOpen(false);
+                setSelectedEventBooking(null);
+              }}
+              booking={selectedEventBooking}
+            />
+
+            <RatingModal 
+              isOpen={isRatingModalOpen}
+              onClose={() => setIsRatingModalOpen(false)}
+              propertyId={activePropertyId}
+            />
 
             {selectedInvoice && (
                 <div className="fixed inset-0 z-[200] bg-white overflow-auto print-only-invoice">
@@ -1011,8 +1146,12 @@ const PackageDetailModal = ({ isOpen, onClose, order }: { isOpen: boolean, onClo
                     </button>
                 </div>
             </div>
-        </div>
+      </div>
+      
+      
     );
+  
+  
 };
 
 
@@ -1125,5 +1264,8 @@ const EventDetailModal = ({
     </div>
   );
 };
+
+
+
 
 export default MyBookingsPage;
