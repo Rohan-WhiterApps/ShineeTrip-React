@@ -321,9 +321,9 @@ export function RoomDetailsModal({
           </div>
         </div>
       )}
-      <DialogContent className="w-full sm:max-w-[1400px] max-h-[95vh] overflow-hidden p-0 bg-[#FDFDFD] rounded-lg shadow-2xl z-[90] ">
+      <DialogContent className="w-full sm:max-w-[90%] max-h-[95vh] overflow-hidden p-0 bg-[#FDFDFD] rounded-lg shadow-2xl z-[90] ">
         {/* Header */}
-        <div className="flex items-center justify-between px-8 py-6 border-b border-gray-200 bg-white sticky top-0 z-50">
+        <div className="flex items-center justify-between px-20 py-6 border-b border-gray-200 bg-white sticky top-0 z-50">
           <div>
             <h2 className="text-2xl font-bold text-gray-900">{roomData?.room_type || roomName}</h2>
             <div className="flex items-center gap-4 mt-2">
@@ -339,7 +339,7 @@ export function RoomDetailsModal({
           {/* Gallery */}
           {/* Gallery: Non-Uniform Grid Layout */}
           {/* Gallery: Non-Uniform Grid */}
-          <div className="p-6">
+          <div className="py-4 px-20 ">
             <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-3 h-[400px] md:h-[550px]">
               {/* Main Large Image */}
               <div
@@ -371,11 +371,11 @@ export function RoomDetailsModal({
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 w-full">
-            {short_desc && <div className="bg-white px-6 py-2 w-[95%] mx-auto"><p className="text-gray-700 text-[15px]">{short_desc}</p></div>}
+          <div className="flex flex-col gap-3 w-[905]">
+            {short_desc && <div className="bg-white px-8 py-2 w-[90%] mx-auto"><p className="text-gray-700 text-[15px]">{short_desc}</p></div>}
 
             {/* Rating */}
-            <div className="rounded-xl border bg-[#F6F6F6] border-gray-200 p-6 w-[95%] mx-auto">
+            <div className="rounded-xl border bg-[#F6F6F6] border-gray-200 p-6 w-[90%] mx-auto">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold text-gray-900">One of the most loved home on Shine Trip</p>
@@ -392,7 +392,7 @@ export function RoomDetailsModal({
             </div>
 
             {/* Availability Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-[95%] mx-auto border-t border-b">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-[90%] mx-auto border-t border-b">
               <div className="lg:col-span-2 space-y-6">
                 <div className="bg-white p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">About this room</h3>
@@ -424,7 +424,7 @@ export function RoomDetailsModal({
             </div>
 
             {/* ✅ AMENITIES SECTION */}
-            <div className="bg-white p-6 w-[95%] mx-auto">
+            <div className="bg-white p-8 w-[90%] mx-auto">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">What this place offers</h3>
               {dynamicAmenities.length > 0 && (
                 <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
