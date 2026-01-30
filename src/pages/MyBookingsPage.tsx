@@ -936,12 +936,24 @@ const filteredEventOrders = useMemo(() => {
                   View Details
                 </button>
 
-                <button
-                  onClick={() => setSelectedInvoice(order)}
-                  className="flex-1 border border-gray-200 py-2.5 rounded-lg text-xs font-black uppercase text-gray-500"
-                >
-                  Invoice
-                </button>
+                {(() => {
+                  const status = order.status.toLowerCase();
+                  const isConfirmed =
+                    status.includes('confirmed') ||
+                    status.includes('complete') ||
+                    status.includes('received');
+
+                  if (!isConfirmed) return null;
+
+                  return (
+                    <button
+                      onClick={() => setSelectedInvoice(order)}
+                      className="flex-1 border border-gray-200 py-2.5 rounded-lg text-xs font-black uppercase text-gray-500"
+                    >
+                      Invoice
+                    </button>
+                  );
+                })()}
 
                 <button
                   onClick={() => navigate(`/room-booking/${room.property.id}`)}
@@ -950,15 +962,27 @@ const filteredEventOrders = useMemo(() => {
                   Book Again
                 </button>
 
-                <button
-    onClick={() => {
-        setActivePropertyId(room.property.id);
-        setIsRatingModalOpen(true);
-    }}
-    className="flex-1 border border-[#D2A256] text-[#D2A256] py-2.5 rounded-lg text-xs font-black uppercase hover:bg-yellow-50"
->
-    Rate Stay
-</button>
+                {(() => {
+                  const status = order.status.toLowerCase();
+                  const isConfirmed =
+                    status.includes('confirmed') ||
+                    status.includes('complete') ||
+                    status.includes('received');
+
+                  if (!isConfirmed) return null;
+
+                  return (
+                    <button
+                      onClick={() => {
+                        setActivePropertyId(room.property.id);
+                        setIsRatingModalOpen(true);
+                      }}
+                      className="flex-1 border border-[#D2A256] text-[#D2A256] py-2.5 rounded-lg text-xs font-black uppercase hover:bg-yellow-50"
+                    >
+                      Rate Stay
+                    </button>
+                  );
+                })()}
               </div>
             </div>
           ))}
