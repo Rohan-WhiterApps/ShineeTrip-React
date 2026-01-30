@@ -20,6 +20,15 @@ import { useNavigate } from 'react-router-dom';
 import { toast, Toaster } from 'react-hot-toast';
 /* ===================== TYPES ===================== */
 
+interface Review {
+  id: number;
+  summary: string;
+  comment: string;
+  overallRating: number;
+  createdAt: string;
+  images: string[];
+}
+
 interface CustomerData {
   id: number;
   first_name: string;
@@ -31,8 +40,8 @@ interface CustomerData {
   profile_image?: string;
   work_title?: string;
   language?: string;
+  reviews?: Review[]; // 🟢 Added this
 }
-
 /* ===================== HELPERS ===================== */
 
 const formatDisplayDate = (date?: string) => {
@@ -85,7 +94,7 @@ const CustomerProfilePage: React.FC = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();
-
+      console.log(data); 
       setCustomer({
         ...data,
         work_title: data.work_title || 'Travel Enthusiast',
@@ -349,54 +358,84 @@ const CustomerProfilePage: React.FC = () => {
           </section>
 
           {/* ================= REVIEWS ================= */}
-          <section>
-            <h2 className="text-2xl font-extrabold mb-6">Reviews</h2>
+        {/* ================= REVIEWS ================= */}
+<section>
+  <h2 className="text-2xl font-extrabold mb-6">Reviews ({customer.reviews?.length || 0})</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {[1, 2, 3].map(i => (
-                <div
-                  key={i}
-                  className="bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-center gap-3 mb-3">
-                    <img
-                      src={customer.profile_image || avatar(customer.first_name)}
-                      className="w-10 h-10 rounded-full"
-                    />
-                    <div>
-                      <p className="font-bold text-sm text-gray-900">
-                        {customer.first_name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        Darjeeling, India
-                      </p>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-gray-400 mb-3">
-                    July 2025
-                  </p>
-
-                  <p className="text-sm text-gray-700 leading-relaxed">
-                    It has been a pleasure hosting them. We hope they had a good stay.
-                  </p>
-
-                  <div className="flex gap-1 mt-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className="w-4 h-4 fill-[#D2A256] text-[#D2A256]"
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    {customer.reviews && customer.reviews.length > 0 ? (
+      customer.reviews.map((review) => (
+        <div
+          key={review.id}
+          className="bg-white border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between"
+        >
+          <div>
+            <div className="flex items-center gap-3 mb-4">
+              <img
+                src={customer.profile_image || avatar(customer.first_name)}
+                className="w-10 h-10 rounded-full object-cover"
+                alt="Reviewer"
+              />
+              <div>
+                <p className="font-bold text-sm text-gray-900">
+                  {review.summary}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {new Date(review.createdAt).toLocaleDateString('en-IN', {
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </p>
+              </div>
             </div>
 
-            <button className="mt-8 bg-black text-white px-8 py-3 rounded-full font-semibold">
-              Show all reviews
-            </button>
-          </section>
+            {review.images && review.images.length > 0 && (
+              <div className="mb-4 rounded-xl overflow-hidden h-32 w-full">
+                <img 
+                  src={review.images[0]} 
+                  className="w-full h-full object-cover" 
+                  alt="Review stay"
+                />
+              </div>
+            )}
+
+            <p className="text-sm text-gray-700 leading-relaxed line-clamp-4 italic">
+              "{review.comment}"
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-50">
+            <div className="flex gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  className={`w-4 h-4 ${
+                    i < Math.floor(review.overallRating)
+                      ? "fill-[#D2A256] text-[#D2A256]"
+                      : "text-gray-200"
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-xs font-bold text-[#D2A256]">
+              {review.overallRating}/5
+            </span>
+          </div>
+        </div>
+      ))
+    ) : (
+      <div className="col-span-full py-12 text-center bg-white border rounded-2xl border-dashed">
+        <p className="text-gray-400">No reviews submitted yet.</p>
+      </div>
+    )}
+  </div>
+
+  {customer.reviews && customer.reviews.length > 0 && (
+    <button className="mt-8 bg-black text-white px-8 py-3 rounded-full font-semibold">
+      Show all reviews
+    </button>
+  )}
+</section>
 
         </div>
       </div>
