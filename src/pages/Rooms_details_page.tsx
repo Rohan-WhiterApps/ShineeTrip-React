@@ -61,7 +61,7 @@ const RestaurantCard = ({ rest }: { rest: any }) => {
 
   return (
     <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm flex flex-col h-full transition-shadow hover:shadow-md">
-      
+
       {/* --- GRID SECTION --- */}
       <div className="grid grid-cols-3 grid-rows-2 gap-1 h-72 shrink-0 bg-gray-100">
         <div className="col-span-2 row-span-2 relative overflow-hidden">
@@ -111,16 +111,16 @@ const RestaurantCard = ({ rest }: { rest: any }) => {
       <Dialog open={isCarouselOpen} onOpenChange={setIsCarouselOpen}>
         <DialogContent className="max-w-none w-screen h-screen m-0 p-0 bg-black/95 border-none rounded-none z-[10000] flex items-center justify-center">
           {/* Close Button */}
-          <button 
-            onClick={() => setIsCarouselOpen(false)} 
+          <button
+            onClick={() => setIsCarouselOpen(false)}
             className="absolute top-8 right-8 p-3 bg-white/10 text-white rounded-full hover:bg-white/20 transition-all z-[10001]"
           >
             <X className="w-8 h-8" />
           </button>
 
           {/* Navigation - Left */}
-          <button 
-            onClick={() => setCarouselIndex(prev => prev === 0 ? localGallery.length - 1 : prev - 1)} 
+          <button
+            onClick={() => setCarouselIndex(prev => prev === 0 ? localGallery.length - 1 : prev - 1)}
             className="absolute left-8 p-5 text-white/50 hover:text-white transition-all z-[10001]"
           >
             <ChevronLeft className="w-12 h-12" />
@@ -128,16 +128,16 @@ const RestaurantCard = ({ rest }: { rest: any }) => {
 
           {/* Image Container */}
           <div className="w-full h-full flex items-center justify-center p-4 md:p-12 select-none">
-            <img 
-              src={localGallery[carouselIndex]} 
-              className="max-h-full max-w-full object-contain shadow-2xl transition-all duration-500" 
-              alt="Full view" 
+            <img
+              src={localGallery[carouselIndex]}
+              className="max-h-full max-w-full object-contain shadow-2xl transition-all duration-500"
+              alt="Full view"
             />
           </div>
 
           {/* Navigation - Right */}
-          <button 
-            onClick={() => setCarouselIndex(prev => prev === localGallery.length - 1 ? 0 : prev + 1)} 
+          <button
+            onClick={() => setCarouselIndex(prev => prev === localGallery.length - 1 ? 0 : prev + 1)}
             className="absolute right-8 p-5 text-white/50 hover:text-white transition-all z-[10001]"
           >
             <ChevronRight className="w-12 h-12" />
@@ -171,7 +171,7 @@ const SpaCard = ({ spa }: { spa: any }) => {
 
     newGallery[0] = selectedImage;
     newGallery[index] = currentHero;
-    
+
     setLocalGallery(newGallery);
   };
 
@@ -187,15 +187,15 @@ const SpaCard = ({ spa }: { spa: any }) => {
 
   return (
     <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm flex flex-col h-full transition-shadow hover:shadow-md">
-      
+
       {/* --- CINEMATIC SWAP GRID --- */}
       <div className="grid grid-cols-3 grid-rows-2 gap-1 h-72 shrink-0 bg-gray-100">
-        
+
         {/* Main Hero (Index 0) */}
         <div className="col-span-2 row-span-2 relative overflow-hidden bg-gray-200">
-          <img 
-            src={localGallery[0]} 
-            className="w-full h-full object-cover transition-all duration-700 ease-in-out" 
+          <img
+            src={localGallery[0]}
+            className="w-full h-full object-cover transition-all duration-700 ease-in-out"
             alt="Main Spa View"
           />
           {spa.multiTherapyAvailable && (
@@ -218,9 +218,9 @@ const SpaCard = ({ spa }: { spa: any }) => {
               className="relative cursor-pointer overflow-hidden border-l border-b border-white group"
             >
               <img src={img} className="w-full h-full object-cover transition-opacity group-hover:opacity-90" alt="spa-thumb" />
-              
+
               {showViewMore && (
-                <div 
+                <div
                   onClick={(e) => openCarousel(e, actualIndex)}
                   className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white transition-all hover:bg-black/75"
                 >
@@ -237,7 +237,7 @@ const SpaCard = ({ spa }: { spa: any }) => {
         {/* Empty slot placeholder */}
         {totalImages === 1 && (
           <div className="col-span-1 row-span-2 bg-gray-50 flex items-center justify-center border-l border-white">
-             <Sparkles className="w-8 h-8 text-gray-200 opacity-20" />
+            <Sparkles className="w-8 h-8 text-gray-200 opacity-20" />
           </div>
         )}
       </div>
@@ -262,8 +262,8 @@ const SpaCard = ({ spa }: { spa: any }) => {
           </p>
           <div className="flex flex-wrap gap-2">
             {spa.treatments?.map((t: string, i: number) => (
-              <span 
-                key={i} 
+              <span
+                key={i}
                 className="text-[11px] font-bold bg-white border border-gray-200 text-gray-700 px-3 py-1.5 rounded-lg shadow-sm"
               >
                 {t}
@@ -277,16 +277,16 @@ const SpaCard = ({ spa }: { spa: any }) => {
       <Dialog open={isCarouselOpen} onOpenChange={setIsCarouselOpen}>
         <DialogContent className="max-w-none w-screen h-screen m-0 p-0 bg-black/95 border-none rounded-none z-[10000] flex items-center justify-center">
           {/* Close Button */}
-          <button 
-            onClick={() => setIsCarouselOpen(false)} 
+          <button
+            onClick={() => setIsCarouselOpen(false)}
             className="absolute top-8 right-8 p-3 bg-white/10 text-white rounded-full hover:bg-white/20 transition-all z-[10001]"
           >
             <X className="w-8 h-8" />
           </button>
 
           {/* Navigation - Left */}
-          <button 
-            onClick={() => setCarouselIndex(prev => prev === 0 ? localGallery.length - 1 : prev - 1)} 
+          <button
+            onClick={() => setCarouselIndex(prev => prev === 0 ? localGallery.length - 1 : prev - 1)}
             className="absolute left-8 p-5 text-white/50 hover:text-white transition-all z-[10001]"
           >
             <ChevronLeft className="w-12 h-12" />
@@ -294,16 +294,16 @@ const SpaCard = ({ spa }: { spa: any }) => {
 
           {/* Main Image View */}
           <div className="w-full h-full flex items-center justify-center p-4 md:p-12">
-            <img 
-              src={localGallery[carouselIndex]} 
-              className="max-h-full max-w-full object-contain shadow-2xl transition-all duration-500" 
-              alt="Full Spa view" 
+            <img
+              src={localGallery[carouselIndex]}
+              className="max-h-full max-w-full object-contain shadow-2xl transition-all duration-500"
+              alt="Full Spa view"
             />
           </div>
 
           {/* Navigation - Right */}
-          <button 
-            onClick={() => setCarouselIndex(prev => prev === localGallery.length - 1 ? 0 : prev + 1)} 
+          <button
+            onClick={() => setCarouselIndex(prev => prev === localGallery.length - 1 ? 0 : prev + 1)}
             className="absolute right-8 p-5 text-white/50 hover:text-white transition-all z-[10001]"
           >
             <ChevronRight className="w-12 h-12" />
@@ -369,8 +369,8 @@ export function RoomDetailsModal({
         const data = response?.data || response;
         setHotelFullData(data);
         const features = data?.selectedFeatures || [];
-        setDynamicAmenities(features.map((f: any) => f?.name).filter(Boolean).length > 0 
-          ? features.map((f: any) => f?.name).filter(Boolean) 
+        setDynamicAmenities(features.map((f: any) => f?.name).filter(Boolean).length > 0
+          ? features.map((f: any) => f?.name).filter(Boolean)
           : ["Air Conditioning", "WiFi", "TV"]);
       } catch (error) { console.error("Property fetch error:", error); }
     };
